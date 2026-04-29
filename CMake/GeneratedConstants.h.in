@@ -1,0 +1,11 @@
+#pragma once
+
+#include <string_view>
+
+namespace PeanutGL {
+    constexpr static std::string_view ASSETS_ROOT { "@AssetsRoot@"};
+    constexpr static std::string_view FILE_PATH_TEMPLATE_DIR { "@RenderdocOutputDir@" };
+    constexpr static std::string_view TRIANGLE_VERT_SOURCE { "@TriangleVertShaderSource@"};
+    constexpr static std::string_view TRIANGLE_FRAG_SOURCE { "@TriangleFragShaderSource@"};
+    
+}

@@ -1,0 +1,18 @@
+[submodule "vendor/glfw"]
+	path = vendor/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "vendor/glm"]
+	path = vendor/glm
+	url = https://github.com/icaven/glm.git
+[submodule "vendor/stb_image"]
+	path = vendor/stb_image
+	url = https://github.com/nothings/stb.git
+[submodule "vendor/moodycamelqueue"]
+	path = vendor/moodycamelqueue
+	url = https://github.com/cameron314/readerwriterqueue.git
+[submodule "vendor/quill"]
+	path = vendor/quill
+	url = https://github.com/odygrd/quill.git
+[submodule "vendor/libunwind"]
+	path = vendor/libunwind
+	url = https://github.com/libunwind/libunwind.git
