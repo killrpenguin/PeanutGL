@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "DebugSystem.hpp"
 #include "Platform.hpp"
 #include "Utilities.hpp"
 
@@ -26,6 +27,7 @@
 #include "imgui_impl_opengl3.h"
 
 #include <cstdint>
+#include <quill/LogMacros.h>
 #include <stdexcept>
 
 namespace PeanutGL {
@@ -68,7 +70,7 @@ namespace PeanutGL {
             context = ImGui::CreateContext();
 
             if ( equal( context, nullptr ) ) {
-                std::cerr << "Failed to create ImGui context" << '\n';
+                LOG_ERROR( QuillPtr(), "Failed to create ImGui context" );
                 return false;
             }
 

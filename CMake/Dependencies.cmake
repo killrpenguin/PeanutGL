@@ -61,17 +61,6 @@ FetchContent_Declare(renderdoc_api
 
 FetchContent_MakeAvailable(renderdoc_api)
 
-FetchContent_Declare(libunwind
-	  GIT_REPOSITORY https://github.com/libunwind/libunwind.git
- 	  GIT_TAG master
-	  EXCLUDE_FROM_ALL
-	  SYSTEM
-	  GIT_PROGRESS TRUE
-	  SOURCE_DIR "${CMAKE_SOURCE_DIR}/vendor/libunwind"
-)
-
-FetchContent_MakeAvailable(libunwind)
-
 FetchContent_Declare(stb
 	GIT_REPOSITORY https://github.com/nothings/stb.git
 	GIT_TAG master

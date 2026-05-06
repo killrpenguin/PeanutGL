@@ -42,8 +42,6 @@ namespace PeanutGL {
         std::vector< vertices_type > vertices{};
         std::vector< indices_type > indices{};
 
-        //        MappedBufferResource< vertices_type > vbo{ GL_ARRAY_BUFFER };
-
         unsigned int VAO{};
         ResourceHandle< Mesh > vbo;
 

@@ -48,10 +48,6 @@ namespace PeanutGL {
         std::string name;
         State state{ State::Uninitialized };
 
-        template < typename Self > auto DrawComponent( this Self&& self ) noexcept -> void {
-            std::forward< Self >( self ).Render();
-        }
-
       public:
         // Deleted to eliminate the chances of object slicing.
         Component( const Component& )            = delete;
@@ -77,6 +73,9 @@ namespace PeanutGL {
          * Called when the component is added to an entity.
          */
         virtual auto Initialize() noexcept -> void = 0;
+        // template < typename Self > auto Initialize( this Self&& self ) noexcept -> void {
+        //     std::forward< Self >( self ).Initialize();
+        // }
 
         /**
          * @brief Update the component.
@@ -89,7 +88,6 @@ namespace PeanutGL {
          * @brief Render the component.
          * Called during the rendering phase.
          */
-        //        virtual auto Render() const noexcept -> void = 0;
         template < typename Self > auto Render( this Self&& self ) noexcept -> void {
             std::forward< Self >( self ).Render();
         }

@@ -1,9 +1,10 @@
 set(INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(HEADER_LIST 
+	"${INCLUDE_PATH}/MaterialResource.hpp"
 	"${INCLUDE_PATH}/RenderDocSystem.hpp"
 	"${INCLUDE_PATH}/DebugSystem.hpp"
-	"${INCLUDE_PATH}/CrashReporter.hpp"
+	"${INCLUDE_PATH}/CrashReporterSystem.hpp"
 	"${INCLUDE_PATH}/ShaderProgram.hpp"
 	"${INCLUDE_PATH}/Shader.hpp"
 	"${INCLUDE_PATH}/MeshResource.hpp"
@@ -42,6 +43,9 @@ set(SRC_LIST
 
 add_library(PeanutGL ${SRC_LIST} ${HEADER_LIST})
 
+# Ensure libunwind builds before PeanutGL.
+# add_dependencies(PeanutGL Libunwind)
+
 target_include_directories(PeanutGL SYSTEM PUBLIC
 	$<BUILD_INTERFACE:${renderdoc_api_SOURCE_DIR}>
 	$<INSTALL_INTERFACE:${renderdoc_api_SOURCE_DIR}>
@@ -73,6 +77,10 @@ target_compile_options(PeanutGL PUBLIC
 )
 
 target_include_directories(PeanutGL PUBLIC include)
+
+target_include_directories(PeanutGL SYSTEM PRIVATE "${LIBUNWIND_INCLUDE_DIR}")
+
+target_link_libraries(PeanutGL PRIVATE "${LIBUNWIND_LIB_DIR}/libunwind.a")
 
 target_link_libraries(PeanutGL PUBLIC imgui glfw glm::glm glad quill::quill PRIVATE 
 	stb_image 

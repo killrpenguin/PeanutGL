@@ -69,7 +69,6 @@ namespace PeanutGL {
         }
 
         auto Unload() noexcept -> void override {
-            // TODO: unique_ptr ownership causing segfault.
             glUnmapNamedBuffer( vbo );
             glDeleteBuffers( 1, &vbo );
             glUnmapNamedBuffer( ebo );

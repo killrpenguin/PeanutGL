@@ -37,7 +37,7 @@ option(ENABLE_DOCS "Build with engine documentation." OFF)
 
 include(CMake/Dependencies.cmake)
 include(CMake/GeneratedConstants.cmake)
-
+include(CMake/LibunwindExtern.cmake)
 # The compiled library code is here
 add_subdirectory(PeanutGL)
 

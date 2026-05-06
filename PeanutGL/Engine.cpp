@@ -19,13 +19,12 @@
 #include <GLFW/glfw3.h>
 #include <glad/gl.h>
 
-#include "CrashReporter.hpp"
+#include "CrashReporterSystem.hpp"
 #include "DebugSystem.hpp"
 #include "Engine.hpp"
 #include "Entity.hpp"
 #include "ImGuiSystem.hpp"
 #include "Platform.hpp"
-// #include "RenderDocSystem.hpp"
 #include "Renderer.hpp"
 #include "ResourceManager.hpp"
 #include "Utilities.hpp"
@@ -464,14 +463,9 @@ namespace PeanutGL {
             case GLFW_KEY_E        :
             case GLFW_KEY_PAGE_DOWN: LOG_DEBUG( QuillPtr(), "Down." ); break;
 
-            case GLFW_KEY_ESCAPE:
-                glfwSetWindowShouldClose( platform->GetWindow(), 1 );
-                break;
-
-                //            case GLFW_KEY_ENTER    : RenderDocSystem::Get().TriggerCapture(); break;
-            case GLFW_KEY_ENTER: CrashReporter::GetSymbolTest(); break;
-
-            default            : break;
+            case GLFW_KEY_ESCAPE   : glfwSetWindowShouldClose( platform->GetWindow(), 1 ); break;
+            // case GLFW_KEY_ENTER    : RenderDocSystem::Get().TriggerCapture(); break;
+            default                : break;
         }
 
         if ( imguiSystem ) { imguiSystem->HandleKeyboard( key, pressed ); }

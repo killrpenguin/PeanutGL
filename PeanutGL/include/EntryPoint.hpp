@@ -16,9 +16,11 @@
 
 #pragma once
 
+#include "CrashReporterSystem.hpp"
 #include "Engine.hpp"
 #include "RenderDocSystem.hpp"
 
+#include "Utilities.hpp"
 #include "quill/LogMacros.h"
 
 // NOLINTBEGIN(misc-definitions-in-headers, readability-redundant-declaration)
@@ -27,7 +29,8 @@ extern void PeanutGL::EngineSetup( Engine* engine );
 namespace PeanutGL {
     auto Main() -> int {
         try {
-            // CrashReporter::GetInstance().Initialize();
+            CrashReporter::GetInstance().Initialize();
+
             (void)RenderDocSystem::Get();
 
             Engine engine;
@@ -41,11 +44,12 @@ namespace PeanutGL {
             // CrashReporter::GetInstance().Cleanup();
 
             return 0;
-
+        } catch ( const FatalSignalError& err ) {
+            LOG_CRITICAL( QuillPtr(), "Fatal signal from system: {}", err.what() );
+            return err();
         } catch ( const std::exception& err ) {
             LOG_CRITICAL( QuillPtr(), "Exception: {}", err.what() );
-            // CrashReporter::GetInstance().Cleanup();
-
+            CrashReporter::GetInstance().Cleanup();
             return 1;
         }
     }

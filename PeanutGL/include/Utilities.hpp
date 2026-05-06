@@ -6,6 +6,7 @@
 
 #include <compare>
 #include <concepts>
+#include <cstdlib>
 #include <fstream>
 #include <functional>
 
@@ -15,6 +16,23 @@ namespace PeanutGL {
     constexpr auto not_equal{ ranges::not_equal_to{} };
     constexpr auto equal{ ranges::equal_to{} };
     constexpr auto greater{ ranges::greater{} };
+
+    class FatalSignalError : std::exception {
+        std::string message{};
+        int code{};
+
+      public:
+        explicit FatalSignalError( std::string_view msg, int val = EXIT_FAILURE )
+            : message{ msg }, code{ val } {
+        }
+        const char* what() const noexcept override {
+            return "";
+        }
+        auto operator()() -> int& = delete;
+        auto operator()() const -> int {
+            return code;
+        }
+    };
 
     template < typename T >
     concept StrictCompareToInt = requires( int MyVal, T other ) {

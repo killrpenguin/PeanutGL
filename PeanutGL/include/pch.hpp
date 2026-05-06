@@ -7,8 +7,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <condition_variable>
+#include <ctime>
+#include <cxxabi.h>
+#include <execinfo.h>
 #include <functional>
-#include <iostream>
+#include <fcntl.h>
 #include <memory>
 #include <ranges>
 #include <string>
@@ -41,3 +44,5 @@
 #include "quill/Logger.h"
 #include "quill/sinks/ConsoleSink.h"
 
+#define UNW_LOCAL_ONLY
+#include "libunwind.h"
