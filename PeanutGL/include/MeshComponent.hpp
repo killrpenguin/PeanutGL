@@ -17,8 +17,8 @@
  */
 
 #pragma once
+#include "BufferResource.hpp"
 #include "Component.hpp"
-#include "MeshResource.hpp"
 #include "ResourceBase.hpp"
 
 #include <cassert>
@@ -36,14 +36,16 @@ namespace PeanutGL {
     class MeshComponent final : public Component {
       public:
         using vertices_type = float;
-        using indices_type  = int;
+        using indices_type  = unsigned int;
 
       private:
         std::vector< vertices_type > vertices{};
         std::vector< indices_type > indices{};
 
         unsigned int VAO{};
-        ResourceHandle< Mesh > vbo;
+
+        ResourceHandle< BufferResource< vertices_type > > vbo;
+        ResourceHandle< BufferResource< indices_type > > ebo;
 
         bool initialized{ false };
 
@@ -55,10 +57,17 @@ namespace PeanutGL {
          * @param componentName The name of the component.
          */
         explicit MeshComponent(
-            ResourceHandle< Mesh > mesh_resource, const std::string& componentName = "MeshComponent" ) noexcept
+            ResourceHandle< BufferResource< vertices_type > > mesh_resource,
+            const std::string& componentName = "MeshComponent" ) noexcept
             : Component( componentName ), vbo{ std::move( mesh_resource ) } {
         }
 
+        explicit MeshComponent(
+            ResourceHandle< BufferResource< vertices_type > > vbo_resource,
+            ResourceHandle< BufferResource< indices_type > > ebo_resource,
+            const std::string& componentName = "MeshComponent" ) noexcept
+            : Component( componentName ), vbo{ std::move( vbo_resource ) }, ebo{ std::move( ebo_resource ) } {
+        }
         MeshComponent( const MeshComponent& )            = delete;
         MeshComponent( MeshComponent&& )                 = delete;
         MeshComponent& operator=( const MeshComponent& ) = delete;
@@ -91,7 +100,7 @@ namespace PeanutGL {
          */
         auto SetVertices( const std::initializer_list< vertices_type > new_vertices ) noexcept -> void {
             vertices = new_vertices;
-            vbo->tmp_write_data( { vertices } );
+            vbo->write( { vertices } );
         }
 
         /**
@@ -108,6 +117,7 @@ namespace PeanutGL {
          */
         auto SetIndices( const std::initializer_list< indices_type > new_indices ) noexcept -> void {
             indices = new_indices;
+            ebo->write( { indices } );
         }
         /**
          * @brief Set the indices of the mesh.

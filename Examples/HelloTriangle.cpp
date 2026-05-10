@@ -1,62 +1,57 @@
+#include "BufferResource.hpp"
 #include "Engine.hpp"
 #include "Entity.hpp"
 #include "EntryPoint.hpp"
+#include "GeneratedConstants.hpp"
+#include "MaterialResource.hpp"
 #include "MeshComponent.hpp"
-#include "MeshResource.hpp"
 #include "ResourceBase.hpp"
 #include "Shader.hpp"
 #include "ShaderProgram.hpp"
 
-#include <cassert>
 #include <glad/gl.h>
 
+#include <cassert>
+
+
 void PeanutGL::EngineSetup( Engine* engine ) {
-    const ResourceHandle< Shader > vert_shader{ engine->LoadResource< Shader >( "TriangleVert", GL_VERTEX_SHADER ) };
-    const ResourceHandle< Shader > frag_shader{ engine->LoadResource< Shader >( "TriangleFrag", GL_FRAGMENT_SHADER ) };
+    const auto vert_shader{ engine->LoadResource< Shader >( "TriangleVert", GL_VERTEX_SHADER ) };
+    const auto frag_shader{ engine->LoadResource< Shader >( "TriangleFrag", GL_FRAGMENT_SHADER ) };
 
-    const auto triangle_mesh_resource{ engine->LoadResource< Mesh >( "TriangleMesh" ) };
+    const auto VBO{ engine->LoadResource< VertexBufferResource >( "VBO" ) };
+    const auto EBO{ engine->LoadResource< ElementBufferResource >( "EBO" ) };
 
-    if ( vert_shader && frag_shader && triangle_mesh_resource ) {
+    const auto Texture{ engine->LoadResource< Texture2D >(
+        "awesomeface", std::string( ASSETS_ROOT ) + "/awesomeface.png" ) };
+
+    // auto VAO {engine->LoadResource< VAOResource >( "VAO" ) };
+
+    if ( vert_shader && frag_shader && VBO ) {
         Entity* triangle_entity{ engine->CreateEntity( "Triangle" ) };
 
         const ResourceHandle< ShaderProgram > shader{ engine->LoadResource< ShaderProgram >(
             "TriangleShader", *vert_shader, *frag_shader ) };
 
-        auto* triangle_component{ triangle_entity->AddComponent< MeshComponent >( triangle_mesh_resource ) };
+        MeshComponent* const triangle_component{ triangle_entity->AddComponent< MeshComponent >( VBO, EBO ) };
 
         // clang-format off
-	    // NOLINTBEGIN
+		// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
         triangle_component->SetVertices({
-	       0.5F, -0.5F, 0.0F,  1.0F, 0.0F, 0.0F,   // bottom right
-           -0.5F, -0.5F, 0.0F,  0.0F, 1.0F, 0.0F,   // bottom left
-           0.0F,  0.5F, 0.0F,  0.0F, 0.0F, 1.0F    // top 
+		       // positions          // colors 
+           0.5F,  0.5F, 0.0F,    1.0F,  0.0F, 0.0F,  // top right
+           0.5F, -0.5F, 0.0F,    0.0F, 1.0F, 0.0F, // bottom right
+        -0.5F, -0.5F, 0.0F,   0.0F, 0.0F, 1.0F, // bottom left
+        -0.5F,  0.5F, 0.0F,   1.0F, 1.0F, 0.0F, // top left 
     	});
-        // NOLINTEND
+
+		triangle_component->SetIndices({
+		  0, 1, 3,
+		  1, 2, 3
+		});
+
+		// NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
         // clang-format on
 
         triangle_entity->Initialize();
     }
 }
-
-/*
-  auto vert_shader { engine->LoadResource< Shader >( "basic_vert", TRIANGLE_VERT_SOURCE ) };
-  auto frag_shader { engine->LoadResource< Shader >( "basic_frag", TRIANGLE_FRAG_SOURCE ) };
-
-  auto vbo { engine->LoadResource< VertexBuffer >( "VBO" ) };
-  auto vao { engine->LoadResource< VertexArray >( "VAO" ) };
-
-  if (vbo && vao && vert_shader && frag_shader) {
-      Entity* triangle_entity{ engine->CreateEntity( "Triangle" ) };
-
-      engine->LoadResource< ShaderProgram >( vert_shader, frag_shader);
-
-      auto* triangle_component { triangle_entity->AddComponent< MeshComponent >( vbo.Get(), vao.Get() ) };
-
-      triangle_component->SetVerticies({
-          //  data here.
-      });
-
-      triangle_entity->Initialize();
-  }
-
-*/

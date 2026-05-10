@@ -26,8 +26,11 @@ namespace PeanutGL {
     auto MeshComponent::Initialize() noexcept -> void {
         glCreateVertexArrays( 1, &VAO );
 
-        glVertexArrayVertexBuffer( VAO, 0, vbo->VertexBufferName(), 0, 6 * sizeof( float ) );
+        glVertexArrayVertexBuffer( VAO, 0, vbo->Name(), 0, 6 * sizeof( float ) );
 
+        glVertexArrayElementBuffer( VAO, ebo->Name() );
+
+        // VAO STUFF TO MOVE LATER.
         glEnableVertexArrayAttrib( VAO, 0 );
 
         glVertexArrayAttribFormat( VAO, 0, 3, GL_FLOAT, GL_FALSE, 0 );

@@ -1,13 +1,13 @@
 set(INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(HEADER_LIST 
+	"${INCLUDE_PATH}/PeanutGL.hpp"
 	"${INCLUDE_PATH}/MaterialResource.hpp"
 	"${INCLUDE_PATH}/RenderDocSystem.hpp"
 	"${INCLUDE_PATH}/DebugSystem.hpp"
 	"${INCLUDE_PATH}/CrashReporterSystem.hpp"
 	"${INCLUDE_PATH}/ShaderProgram.hpp"
 	"${INCLUDE_PATH}/Shader.hpp"
-	"${INCLUDE_PATH}/MeshResource.hpp"
 	"${INCLUDE_PATH}/ResourceBase.hpp"
 	"${INCLUDE_PATH}/GeneratedConstants.hpp"
 	"${INCLUDE_PATH}/Application.hpp"
@@ -27,6 +27,7 @@ set(HEADER_LIST
 )
 
 set(SRC_LIST 
+	"STBImage.cpp"
 	"RenderDocSystem.cpp"
 	"ResourceBase.cpp"
 	"PhysicsSystem.cpp"
@@ -82,6 +83,5 @@ target_include_directories(PeanutGL SYSTEM PRIVATE "${LIBUNWIND_INCLUDE_DIR}")
 
 target_link_libraries(PeanutGL PRIVATE "${LIBUNWIND_LIB_DIR}/libunwind.a")
 
-target_link_libraries(PeanutGL PUBLIC imgui glfw glm::glm glad quill::quill PRIVATE 
-	stb_image 
+target_link_libraries(PeanutGL PUBLIC imgui glfw glm::glm glad quill::quill stb_image PRIVATE 
 	readerwriterqueue)
