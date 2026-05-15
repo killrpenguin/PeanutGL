@@ -19,10 +19,14 @@
 #pragma once
 #include "BufferResource.hpp"
 #include "Component.hpp"
+#include "DebugSystem.hpp"
 #include "ResourceBase.hpp"
+#include "Utilities.hpp"
 
 #include <cassert>
 #include <glm/glm.hpp>
+#include <initializer_list>
+#include <quill/LogMacros.h>
 #include <span>
 #include <string>
 #include <utility>
@@ -41,6 +45,9 @@ namespace PeanutGL {
       private:
         std::vector< vertices_type > vertices{};
         std::vector< indices_type > indices{};
+
+        int stride{};
+        std::vector< VertexBufferElement > layout{};
 
         unsigned int VAO{};
 
@@ -95,19 +102,96 @@ namespace PeanutGL {
         auto Render() const noexcept -> void;
 
         /**
+         * @brief Set the attributes of the mesh.
+         * @param count The count of the element.
+         */
+        template < typename T >
+        auto SetAttributes( [[maybe_unused]] const std::initializer_list< int > attrs ) noexcept
+            -> std::span< const VertexBufferElement > {
+        }
+
+        template <>
+        auto SetAttributes< float >( const std::initializer_list< int > attrs ) noexcept
+            -> std::span< const VertexBufferElement > {
+            if ( equal( attrs.size(), 0 ) ) {
+                LOG_WARNING( QuillPtr(), "No attributes were added to {}.", Component::GetName() );
+                return { layout };
+            }
+
+            for ( const auto count : attrs ) {
+                layout.push_back( { .type = GL_FLOAT, .count = count, .normalized = GL_FALSE } );
+                stride += count * VertexBufferElement::size_of_enum_type( GL_FLOAT );
+            }
+            initialized = true;
+            return { layout };
+        }
+
+        template <>
+        auto SetAttributes< unsigned int >( const std::initializer_list< int > attrs ) noexcept
+            -> std::span< const VertexBufferElement > {
+            if ( equal( attrs.size(), 0 ) ) {
+                LOG_WARNING( QuillPtr(), "No attributes were added to {}.", Component::GetName() );
+                return { layout };
+            }
+
+            for ( const auto count : attrs ) {
+                layout.push_back( { .type = GL_UNSIGNED_INT, .count = count, .normalized = GL_FALSE } );
+                stride += count * VertexBufferElement::size_of_enum_type( GL_UNSIGNED_INT );
+            }
+          
+            initialized = true;
+            return { layout };
+        }
+
+        template <>
+        auto SetAttributes< unsigned char >( const std::initializer_list< int > attrs ) noexcept
+            -> std::span< const VertexBufferElement > {
+            if ( equal( attrs.size(), 0 ) ) {
+                LOG_WARNING( QuillPtr(), "No attributes were added to {}.", Component::GetName() );
+                return { layout };
+            }
+
+            for ( const auto count : attrs ) {
+                layout.push_back( { .type = GL_UNSIGNED_BYTE, .count = count, .normalized = GL_TRUE } );
+                stride += count * VertexBufferElement::size_of_enum_type( GL_UNSIGNED_BYTE );
+            }
+            initialized = true;
+            return { layout };
+        }
+
+        /**
+         * @brief Get a non-owning view of the Mesh verticies layout.
+         * @return The vertices.
+         */
+        auto GetLayout() const noexcept -> std::span< const VertexBufferElement > {
+            return { layout };
+        }
+
+        /**
+         * @brief Set the Vertices of the mesh.
+         * @param new_vertices The new indices.
+         */
+        auto SetVertices( const std::span< indices_type > new_vertices ) noexcept -> void {
+            vertices.assign( new_vertices.begin(), new_vertices.end() );
+
+            if ( vbo ) { vbo->write( { vertices } ); }
+        }
+
+        /**
          * @brief Set the vertices of the mesh.
          * @param new_vertices The new vertices as an initializer list.
          */
         auto SetVertices( const std::initializer_list< vertices_type > new_vertices ) noexcept -> void {
             vertices = new_vertices;
-            vbo->write( { vertices } );
+
+            if ( vbo ) { vbo->write( { vertices } ); }
         }
 
         /**
          * @brief Get a non-owning view of the vertices of the mesh.
          * @return The vertices.
          */
-        auto GetVertices() noexcept -> std::span< const vertices_type > {
+        auto GetVertices() const noexcept -> std::span< const vertices_type > {
             return { vertices };
         }
 
@@ -117,21 +201,25 @@ namespace PeanutGL {
          */
         auto SetIndices( const std::initializer_list< indices_type > new_indices ) noexcept -> void {
             indices = new_indices;
-            ebo->write( { indices } );
+
+            if ( ebo ) { ebo->write( { indices } ); }
         }
+
         /**
          * @brief Set the indices of the mesh.
          * @param new_indices The new indices.
          */
         auto SetIndices( const std::span< indices_type > new_indices ) noexcept -> void {
             indices.assign( new_indices.begin(), new_indices.end() );
+
+            if ( ebo ) { ebo->write( { indices } ); }
         }
 
         /**
          * @brief Get a non-owning view of the indices of the mesh.
          * @return The indices.
          */
-        auto GetIndices() noexcept -> std::span< const indices_type > {
+        auto GetIndices() const noexcept -> std::span< const indices_type > {
             return { indices };
         }
 

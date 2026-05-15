@@ -10,7 +10,7 @@ set(HEADER_LIST
 	"${INCLUDE_PATH}/Shader.hpp"
 	"${INCLUDE_PATH}/ResourceBase.hpp"
 	"${INCLUDE_PATH}/GeneratedConstants.hpp"
-	"${INCLUDE_PATH}/Application.hpp"
+	"${INCLUDE_PATH}/VertexArray.hpp"
 	"${INCLUDE_PATH}/Utilities.hpp"
 	"${INCLUDE_PATH}/PhysicsSystem.hpp"
 	"${INCLUDE_PATH}/Engine.hpp"
@@ -28,6 +28,7 @@ set(HEADER_LIST
 
 set(SRC_LIST 
 	"STBImage.cpp"
+	"VertexArray.cpp"
 	"RenderDocSystem.cpp"
 	"ResourceBase.cpp"
 	"PhysicsSystem.cpp"

@@ -24,28 +24,7 @@
 
 namespace PeanutGL {
     auto MeshComponent::Initialize() noexcept -> void {
-        glCreateVertexArrays( 1, &VAO );
-
-        glVertexArrayVertexBuffer( VAO, 0, vbo->Name(), 0, 6 * sizeof( float ) );
-
-        glVertexArrayElementBuffer( VAO, ebo->Name() );
-
-        // VAO STUFF TO MOVE LATER.
-        glEnableVertexArrayAttrib( VAO, 0 );
-
-        glVertexArrayAttribFormat( VAO, 0, 3, GL_FLOAT, GL_FALSE, 0 );
-
-        glVertexArrayAttribBinding( VAO, 0, 0 );
-
-        glEnableVertexArrayAttrib( VAO, 1 );
-
-        glVertexArrayAttribFormat( VAO, 1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof( float ) );
-
-        glVertexArrayAttribBinding( VAO, 1, 0 );
-
-        glBindVertexArray( VAO );
-
-        initialized = true;
+        if ( not_equal( layout.size(), 0 ) ) { initialized = true; }
     }
 
     auto MeshComponent::Update( [[maybe_unused]] std::chrono::milliseconds deltaTime ) -> void {

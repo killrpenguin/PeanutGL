@@ -104,9 +104,9 @@ namespace PeanutGL {
             return val;
         }
 
-        friend auto operator<<( std::ostream& os, const XAxis& self ) -> std::ostream& {
-            os << self.val;
-            return os;
+        friend auto operator<<( std::ostream& _os, const XAxis& self ) -> std::ostream& {
+            _os << self.val;
+            return _os;
         }
     };
 
@@ -129,9 +129,28 @@ namespace PeanutGL {
             return val;
         }
 
-        friend auto operator<<( std::ostream& os, const YAxis& self ) -> std::ostream& {
-            os << self.val;
-            return os;
+        friend auto operator<<( std::ostream& _os, const YAxis& self ) -> std::ostream& {
+            _os << self.val;
+            return _os;
+        }
+    };
+
+    struct VertexBufferElement {
+        unsigned int type{}; // GLenum type.
+        int count{};
+        unsigned char normalized{};
+
+        template < typename T > constexpr auto static _size_of() -> unsigned int {
+            return static_cast< unsigned int >( sizeof( T ) );
+        };
+
+        auto static size_of_enum_type( const unsigned int type ) -> int {
+            switch ( type ) {
+                case GL_FLOAT        : return _size_of< GLfloat >(); // OpenGL spec gaurantees 4.
+                case GL_UNSIGNED_INT : return _size_of< GLuint >();  // OpenGL spec gaurantees 4.
+                case GL_UNSIGNED_BYTE: return _size_of< GLbyte >();  // OpenGL spec gaurantees 1.
+                default              : assert( false && "Could not get size of type for VertexBufferLayout." );
+            }
         }
     };
 

@@ -49,8 +49,8 @@ namespace PeanutGL {
             entity->Render();
         }
 
-        //        glDrawArrays( GL_TRIANGLES, 0, 3 );
-        glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
+        constexpr GLsizei Count{ 6 };
+        glDrawElements( GL_TRIANGLES, Count, GL_UNSIGNED_INT, nullptr );
 
         if ( not_equal( imguiSystem, nullptr ) ) { imguiSystem->Render(); }
 

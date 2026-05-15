@@ -108,6 +108,6 @@ namespace PeanutGL {
 
         return static_cast< BufferTypePtr >( glMapNamedBufferRange( handle, 0, BUFFERSIZE, access_flags ) );
     }
-    using ElementBufferResource = BufferResource< unsigned int >;
-    using VertexBufferResource  = BufferResource< float >;
+    using ElementBuffer = BufferResource< unsigned int >;
+    using VertexBuffer  = BufferResource< float >;
 } // namespace PeanutGL
