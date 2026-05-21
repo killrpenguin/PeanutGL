@@ -314,5 +314,5 @@ namespace PeanutGL {
         auto UpdateCameraControls( const TimeDelta deltaTime ) noexcept -> void;
     };
 
-    void EngineSetup( Engine* engine );
+    void EngineSetup( Engine* const engine );
 } // namespace PeanutGL

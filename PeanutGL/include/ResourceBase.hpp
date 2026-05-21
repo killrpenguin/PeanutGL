@@ -62,7 +62,7 @@ namespace PeanutGL {
          * @brief Get the resource ID.
          * @return The resource ID.
          */
-        constexpr auto GetId() const noexcept -> std::string_view {
+        constexpr auto GetId() const noexcept -> const std::string& {
             return resourceId;
         }
 

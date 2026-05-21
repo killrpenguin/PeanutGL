@@ -18,12 +18,17 @@
 
 #pragma once
 
+#include "DebugSystem.hpp"
+#include "MaterialResource.hpp"
 #include "ResourceBase.hpp"
 #include "Shader.hpp"
 #include "Utilities.hpp"
 
 #include <glad/gl.h>
+
+#include <quill/LogMacros.h>
 #include <string_view>
+#include <unordered_map>
 
 namespace PeanutGL {
     /**
@@ -32,8 +37,16 @@ namespace PeanutGL {
      * This class stores the OpenGL handle to a shader.
      */
     class ShaderProgram : public Resource {
+        struct uniform_info {
+            GLint location;
+            GLsizei count;
+            GLenum type;
+        };
+
       private:
         unsigned int program_handle{};
+
+        std::unordered_map< std::string, uniform_info > uniforms{};
 
       public:
         ShaderProgram() noexcept = default;
@@ -64,89 +77,199 @@ namespace PeanutGL {
         auto Load() noexcept -> bool override {
             glUseProgram( program_handle );
 
+            populate_uniforms();
+
             loaded = true;
+
             return loaded;
         }
 
-        template < typename T > constexpr auto Set( const std::string& name, const T& value ) const noexcept -> void;
+        auto constexpr populate_uniforms() noexcept -> void;
 
         template < typename T >
-        constexpr auto Set( const std::string& name, const T xpos, const T ypos ) const noexcept -> void;
+        constexpr auto SetUniform( const std::string& name, const T& value ) const noexcept -> void;
 
         template < typename T >
-        constexpr auto Set( const std::string& name, const T xpos, const T ypos, const T zpos ) const noexcept -> void;
+        constexpr auto SetUniform( const std::string& name, const T xpos, const T ypos ) const noexcept -> void;
 
         template < typename T >
-        constexpr auto Set(
+        constexpr auto SetUniform( const std::string& name, const T xpos, const T ypos, const T zpos ) const noexcept
+            -> void;
+
+        template < typename T >
+        constexpr auto SetUniform(
             const std::string& name, const T xpos, const T ypos, const T zpos, const T wpos ) const noexcept -> void;
+
+        template < typename T > constexpr auto SetUniform( T& resource_handle ) const noexcept -> void;
     };
 
-    template <> constexpr auto ShaderProgram::Set( const std::string& name, const bool& value ) const noexcept -> void {
-        glUniform1i( glGetUniformLocation( program_handle, name.c_str() ), static_cast< int >( value ) );
-    }
+    auto constexpr ShaderProgram::populate_uniforms() noexcept -> void {
+        int uniform_count{ 0 };
 
-    template <> constexpr auto ShaderProgram::Set( const std::string& name, const int& value ) const noexcept -> void {
-        glUniform1i( glGetUniformLocation( program_handle, name.c_str() ), value );
+        glGetProgramiv( program_handle, GL_ACTIVE_UNIFORMS, &uniform_count );
+
+        if ( equal( uniform_count, 0 ) ) {
+            LOG_INFO( QuillPtr(), "No uniforms identified in the current shader program." );
+            return;
+        }
+
+        GLint max_name_len{ 0 };
+
+        glGetProgramiv( program_handle, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_name_len );
+
+        GLsizei length{ 0 };
+        GLsizei uni_count{ 0 };
+        GLenum type{ GL_NONE };
+
+        // NOLINTNEXTLINE
+        auto uniform_name{ std::make_unique< char[] >( max_name_len ) };
+
+        for ( const int index : std::views::iota( 0, uniform_count ) ) {
+            glGetActiveUniform( program_handle, index, max_name_len, &length, &uni_count, &type, uniform_name.get() );
+
+            if ( uniform_name ) {
+                const uniform_info uniform_data{ .location = glGetUniformLocation( program_handle, uniform_name.get() ),
+                                                 .count    = uni_count,
+                                                 .type     = type };
+
+                uniforms.emplace( std::string( uniform_name.get() ), uniform_data );
+            }
+        }
     }
 
     template <>
-    constexpr auto ShaderProgram::Set( const std::string& name, const float& value ) const noexcept -> void {
-        glUniform1f( glGetUniformLocation( program_handle, name.c_str() ), value );
+    constexpr auto ShaderProgram::SetUniform( const std::string& name, const bool& value ) const noexcept -> void {
+        glProgramUniform1i(
+            program_handle, glGetUniformLocation( program_handle, name.c_str() ), static_cast< int >( value ) );
     }
 
     template <>
-    constexpr auto ShaderProgram::Set< glm::vec< 2, float > >(
+    constexpr auto ShaderProgram::SetUniform( const std::string& name, const int& value ) const noexcept -> void {
+        if ( const auto uniform = uniforms.find( name ); not_equal( uniform, uniforms.end() ) ) {
+            glProgramUniform1i( program_handle, uniform->second.location, value );
+        } else {
+            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
+        }
+    }
+
+    template <>
+    constexpr auto ShaderProgram::SetUniform( const std::string& name, const float& value ) const noexcept -> void {
+        if ( const auto uniform = uniforms.find( name ); not_equal( uniform, uniforms.end() ) ) {
+            glProgramUniform1f( program_handle, uniform->second.location, value );
+        } else {
+            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
+        }
+    }
+
+    template <>
+    constexpr auto ShaderProgram::SetUniform< glm::vec< 2, float > >(
         const std::string& name, const glm::vec< 2, float >& value ) const noexcept -> void {
-        glUniform2fv( glGetUniformLocation( program_handle, name.c_str() ), 1, &value[0] );
+        if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
+            glProgramUniform2fv( program_handle, uni->second.location, uni->second.count, &value[0] );
+        } else {
+            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
+        }
     }
 
     template <>
-    constexpr auto ShaderProgram::Set( const std::string& name, const float xpos, const float y ) const noexcept
+    constexpr auto ShaderProgram::SetUniform( const std::string& name, const float xpos, const float y ) const noexcept
         -> void {
-        glUniform2f( glGetUniformLocation( program_handle, name.c_str() ), xpos, y );
+        if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
+            glProgramUniform2f( program_handle, uni->second.location, xpos, y );
+        } else {
+            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
+        }
     }
 
     template <>
-    constexpr auto ShaderProgram::Set< glm::vec< 3, float > >(
+    constexpr auto ShaderProgram::SetUniform< glm::vec< 3, float > >(
         const std::string& name, const glm::vec< 3, float >& value ) const noexcept -> void {
-        glUniform3fv( glGetUniformLocation( program_handle, name.c_str() ), 1, &value[0] );
+        if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
+            glProgramUniform3fv( program_handle, uni->second.location, uni->second.count, &value[0] );
+        } else {
+            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
+        }
     }
 
     template <>
-    constexpr auto ShaderProgram::Set(
+    constexpr auto ShaderProgram::SetUniform(
         const std::string& name, const float xpos, const float ypos, const float zpos ) const noexcept -> void {
-        glUniform3f( glGetUniformLocation( program_handle, name.c_str() ), xpos, ypos, zpos );
+        if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
+            glProgramUniform3f( program_handle, uni->second.location, xpos, ypos, zpos );
+        } else {
+            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
+        }
     }
 
     template <>
-    constexpr auto ShaderProgram::Set< glm::vec< 4, float > >(
+    constexpr auto ShaderProgram::SetUniform< glm::vec< 4, float > >(
         const std::string& name, const glm::vec< 4, float >& value ) const noexcept -> void {
-        glUniform4fv( glGetUniformLocation( program_handle, name.c_str() ), 1, &value[0] );
+        if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
+            glProgramUniform4fv( program_handle, uni->second.location, uni->second.count, &value[0] );
+        } else {
+            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
+        }
     }
 
     template <>
-    constexpr auto ShaderProgram::Set(
+    constexpr auto ShaderProgram::SetUniform(
         const std::string& name, const float xpos, const float ypos, const float zpos, const float wpos ) const noexcept
         -> void {
-        glUniform4f( glGetUniformLocation( program_handle, name.c_str() ), xpos, ypos, zpos, wpos );
+        if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
+            glProgramUniform4f( program_handle, uni->second.location, xpos, ypos, zpos, wpos );
+        } else {
+            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
+        }
     }
 
     template <>
-    constexpr auto ShaderProgram::Set< glm::mat< 2, 2, float > >(
+    constexpr auto ShaderProgram::SetUniform< glm::mat< 2, 2, float > >(
         const std::string& name, const glm::mat< 2, 2, float >& value ) const noexcept -> void {
-        glUniformMatrix2fv( glGetUniformLocation( program_handle, name.c_str() ), 1, GL_FALSE, &value[0][0] );
+        if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
+            glProgramUniformMatrix2fv(
+                program_handle, uni->second.location, uni->second.count, GL_FALSE, &value[0][0] );
+        } else {
+            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
+        }
     }
 
     template <>
-    constexpr auto ShaderProgram::Set< glm::mat< 3, 3, float > >(
+    constexpr auto ShaderProgram::SetUniform< glm::mat< 3, 3, float > >(
         const std::string& name, const glm::mat< 3, 3, float >& value ) const noexcept -> void {
-        glUniformMatrix3fv( glGetUniformLocation( program_handle, name.c_str() ), 1, GL_FALSE, &value[0][0] );
+        if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
+            glProgramUniformMatrix3fv(
+                program_handle, uni->second.location, uni->second.count, GL_FALSE, &value[0][0] );
+        } else {
+            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
+        }
     }
 
     template <>
-    constexpr auto ShaderProgram::Set< glm::mat< 4, 4, float > >(
+    constexpr auto ShaderProgram::SetUniform< glm::mat< 4, 4, float > >(
         const std::string& name, const glm::mat< 4, 4, float >& value ) const noexcept -> void {
-        glUniformMatrix4fv( glGetUniformLocation( program_handle, name.c_str() ), 1, GL_FALSE, &value[0][0] );
+        if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
+            glProgramUniformMatrix4fv(
+                program_handle, uni->second.location, uni->second.count, GL_FALSE, &value[0][0] );
+        } else {
+            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
+        }
     }
 
+    template <>
+    constexpr auto ShaderProgram::SetUniform( const ResourceHandle< Texture2D >& resource_handle ) const noexcept
+        -> void {
+        SetUniform( resource_handle->GetId(), resource_handle->TextureUnit() );
+    }
+
+    template <>
+    constexpr auto ShaderProgram::SetUniform( const ResourceHandle< Texture3D >& resource_handle ) const noexcept
+        -> void {
+        SetUniform( resource_handle->GetId(), resource_handle->TextureUnit() );
+    }
+
+    template <>
+    constexpr auto ShaderProgram::SetUniform( const ResourceHandle< CubeTexture >& resource_handle ) const noexcept
+        -> void {
+        SetUniform( resource_handle->GetId(), resource_handle->TextureUnit() );
+    }
 } // namespace PeanutGL

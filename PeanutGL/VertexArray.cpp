@@ -14,9 +14,9 @@ namespace PeanutGL {
     auto VertexArray::Load() noexcept -> bool {
         glCreateVertexArrays( 1, &VAO );
 
-        constexpr GLsizei tmp_stride{ 8 * static_cast< GLsizei >( sizeof( float ) ) };
+        constexpr GLsizei stride{ 5 * static_cast< GLsizei >( sizeof( float ) ) };
 
-        glVertexArrayVertexBuffer( VAO, 0, vbo_name, 0, tmp_stride );
+        glVertexArrayVertexBuffer( VAO, 0, vbo_name, 0, stride );
 
         glVertexArrayElementBuffer( VAO, ebo_name );
 
@@ -28,10 +28,10 @@ namespace PeanutGL {
     }
 
     auto VertexArray::SetLayout( std::span< const VertexBufferElement > elements ) const noexcept -> void {
-      if ( equal( elements.size(), 0 ) ) {
-		LOG_ERROR(QuillPtr(), "Layout can not contain 0 elements.");
-        return;
-      }
+        if ( equal( elements.size(), 0 ) ) {
+            LOG_ERROR( QuillPtr(), "Layout can not contain 0 elements." );
+            return;
+        }
 
         unsigned int offset{ 0 };
         for ( const auto [attr_index, element] : std::views::enumerate( std::views::as_const( elements ) ) ) {

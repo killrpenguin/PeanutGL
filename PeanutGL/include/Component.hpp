@@ -18,8 +18,6 @@
 
 #include <cstddef>
 #include <string>
-#include <string_view>
-
 namespace PeanutGL {
     // Forward declaration
     class Entity;
@@ -112,8 +110,8 @@ namespace PeanutGL {
          * @brief Get the name of the component.
          * @return The name of the component.
          */
-        constexpr auto GetName() const noexcept -> std::string_view {
-            return std::string_view( name );
+        constexpr auto GetName() const noexcept -> const std::string& {
+            return name;
         }
 
         /**

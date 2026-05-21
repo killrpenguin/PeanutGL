@@ -21,6 +21,7 @@
 #include "DebugSystem.hpp"
 #include "GeneratedConstants.hpp"
 #include "ResourceBase.hpp"
+#include "Utilities.hpp"
 
 #include <glad/gl.h>
 #include <quill/LogMacros.h>
@@ -36,6 +37,8 @@ namespace PeanutGL {
     template < GLenum Target > class Material final : public Resource {
       private:
         unsigned int handle{};
+        unsigned int texture_unit{};
+
         GLenum format{};
         GLenum internal_format{};
 
@@ -60,10 +63,10 @@ namespace PeanutGL {
         }
 
         constexpr auto SetFormat() noexcept -> void {
-            if ( file_name.extension() == ".png" ) {
+            if ( equal( file_name.extension(), ".png" ) ) {
                 format          = GL_RGBA;
                 internal_format = GL_RGBA8;
-            } else if ( file_name.extension() == ".jpg" ) {
+            } else if ( equal( file_name.extension(), ".jpg" ) ) {
                 format          = GL_RGB;
                 internal_format = GL_RGB8;
             } else {
@@ -72,7 +75,7 @@ namespace PeanutGL {
         }
 
       public:
-        Material() noexcept = default;
+        Material() noexcept = delete;
 
         // Delete the copy constructor and copy assignment operator. Resources are stored as unique pointers in
         // the resource manager.
@@ -81,20 +84,21 @@ namespace PeanutGL {
         Material& operator=( const Material& )     = delete;
         Material& operator=( Material&& ) noexcept = default;
 
-        // NOLINTNEXTLINE
-        explicit Material( const std::string& identifier, std::string file, bool flip_image = false ) noexcept
-            : Resource( identifier ), file_name{ std::move( file ) }, flip_image{ flip_image } {
+        /**
+         * @brief Constructor for a Material resource.
+         *
+         * This constructor may catch an implementation-defined exceptions if fs::path throws.
+         */
+        explicit Material( const std::string_view file, const unsigned int unit, bool flip_image = false ) noexcept try
+            : Resource( file.substr( 0, file.find( '.' ) ) ),
+              texture_unit{ unit },
+              file_name{ std::string( ASSETS_ROOT ) + "/" + file },
+              flip_image{ flip_image } {
             SetFormat();
             Load();
-        }
-
-        explicit Material(
-            // NOLINTNEXTLINE
-            const std::string& identifier, std::string file, const unsigned int unit, bool flip_image = false ) noexcept
-            : Resource( identifier ), file_name{ std::move( file ) }, flip_image{ flip_image } {
-            SetFormat();
-            Load();
-            glBindTextureUnit( unit, handle );
+            SetTextureUnit( texture_unit );
+        } catch ( const std::exception& err ) {
+            LOG_ERROR( QuillPtr(), "Error during initialization of Material constructor.\n\tnWhat: {}", err.what() );
         }
 
         ~Material() override {
@@ -106,16 +110,19 @@ namespace PeanutGL {
         }
 
         auto Load() noexcept -> bool override {
+            stbi_uc* const pixels{ load_texture( file_name ) };
+
+            if ( equal( pixels, nullptr ) ) {
+                LOG_WARNING( QuillPtr(), "Image library could not load {}.", file_name.string() );
+                return false;
+            }
+
             glCreateTextures( Target, 1, &handle );
 
             glTextureParameteri( handle, GL_TEXTURE_WRAP_S, GL_REPEAT );
             glTextureParameteri( handle, GL_TEXTURE_WRAP_T, GL_REPEAT );
             glTextureParameteri( handle, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
             glTextureParameteri( handle, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-
-            stbi_uc* const pixels{ load_texture( file_name ) };
-
-            assert( pixels != nullptr && "Is this nullptr after loading texture?" );
 
             glTextureStorage2D( handle, 1, internal_format, width, height );
             glTextureSubImage2D( handle, 0, 0, 0, width, height, format, GL_UNSIGNED_BYTE, pixels );
@@ -127,8 +134,12 @@ namespace PeanutGL {
             return true;
         }
 
-        auto SetTextureUnit( const unsigned int unit ) const noexcept -> void {
+        constexpr auto SetTextureUnit( const unsigned int unit ) const noexcept -> void {
             glBindTextureUnit( unit, handle );
+        }
+
+        constexpr auto TextureUnit() const noexcept -> int {
+            return static_cast< int >( texture_unit );
         }
     };
 

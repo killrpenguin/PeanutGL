@@ -56,8 +56,6 @@ namespace PeanutGL {
 
         bool initialized{ false };
 
-        std::string texturePath{};
-
       public:
         /**
          * @brief Constructor with an optional name.
@@ -85,7 +83,6 @@ namespace PeanutGL {
         }
         /**
          * @brief Initialize the component.
-         * @return True if initialization was successful, false otherwise.
          */
         auto Initialize() noexcept -> void override;
 
@@ -102,13 +99,13 @@ namespace PeanutGL {
         auto Render() const noexcept -> void;
 
         /**
-         * @brief Set the attributes of the mesh.
+         * @brief Define the vertex array attributes of the mesh.
          * @param count The count of the element.
+         * @return A span of elements to pass to the SetLayout member function of a VAO resource.
          */
         template < typename T >
-        auto SetAttributes( [[maybe_unused]] const std::initializer_list< int > attrs ) noexcept
-            -> std::span< const VertexBufferElement > {
-        }
+        auto SetAttributes( const std::initializer_list< int > attrs ) noexcept
+            -> std::span< const VertexBufferElement >;
 
         template <>
         auto SetAttributes< float >( const std::initializer_list< int > attrs ) noexcept
@@ -138,7 +135,7 @@ namespace PeanutGL {
                 layout.push_back( { .type = GL_UNSIGNED_INT, .count = count, .normalized = GL_FALSE } );
                 stride += count * VertexBufferElement::size_of_enum_type( GL_UNSIGNED_INT );
             }
-          
+
             initialized = true;
             return { layout };
         }
@@ -221,22 +218,6 @@ namespace PeanutGL {
          */
         auto GetIndices() const noexcept -> std::span< const indices_type > {
             return { indices };
-        }
-
-        /**
-         * @brief Set the texture path for the mesh.
-         * @param path The path to the texture file.
-         */
-        auto SetTexturePath( const std::string& path ) noexcept -> void {
-            texturePath = path;
-        }
-
-        /**
-         * @brief Get the texture path for the mesh.
-         * @return The path to the texture file.
-         */
-        const std::string& GetTexturePath() const {
-            return texturePath;
         }
     };
 } // namespace PeanutGL
