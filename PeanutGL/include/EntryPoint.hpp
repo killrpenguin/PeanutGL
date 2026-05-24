@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include "CrashReporterSystem.hpp"
 #include "Engine.hpp"
 #include "RenderDocSystem.hpp"
 
@@ -29,9 +28,7 @@ extern void PeanutGL::EngineSetup( Engine* engine );
 namespace PeanutGL {
     auto Main() -> int {
         try {
-            CrashReporter::GetInstance().Initialize();
-
-            (void)RenderDocSystem::Get();
+            RenderDocSystem::Initialize();
 
             Engine engine;
 
@@ -49,7 +46,6 @@ namespace PeanutGL {
             return err();
         } catch ( const std::exception& err ) {
             LOG_CRITICAL( QuillPtr(), "Exception: {}", err.what() );
-            CrashReporter::GetInstance().Cleanup();
             return 1;
         }
     }

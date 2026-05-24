@@ -10,28 +10,33 @@
 #include <quill/LogMacros.h>
 
 namespace PeanutGL {
-
-    class TransformComponent final : public Component {
+    /**
+     * @brief Model component.
+     *
+     * This class implements the component interface.
+     */
+    class ModelComponent final : public Component {
       private:
-        ResourceHandle< ShaderProgram > shader_program;
+        ResourceHandle< ShaderProgram > shader_program{};
+        float degrees{};
 
       public:
-        TransformComponent() = delete;
+        ModelComponent() = delete;
         /**
          * @brief Constructor with an optional name.
          * @param handle The handle to the shader program.
          * @param componentName The name of the component.
          */
-        explicit TransformComponent(
-            // NOLINTNEXTLINE
-            const ResourceHandle< ShaderProgram > handle, const std::string& componentName = "transform" );
+        explicit ModelComponent(
+            const ResourceHandle< ShaderProgram >& handle, const float degrees = -55.0F,
+            const std::string& componentName = "model" );
 
-        TransformComponent( const TransformComponent& )            = delete;
-        TransformComponent( TransformComponent&& )                 = delete;
-        TransformComponent& operator=( const TransformComponent& ) = delete;
-        TransformComponent& operator=( TransformComponent&& )      = delete;
+        ModelComponent( const ModelComponent& )            = delete;
+        ModelComponent( ModelComponent&& )                 = delete;
+        ModelComponent& operator=( const ModelComponent& ) = delete;
+        ModelComponent& operator=( ModelComponent&& )      = delete;
 
-        ~TransformComponent() noexcept override = default;
+        ~ModelComponent() noexcept override = default;
 
         /**
          * @brief Initialize the component.

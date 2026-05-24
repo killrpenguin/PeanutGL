@@ -22,7 +22,7 @@
 #include "readerwriterqueue.h"
 
 #include <condition_variable>
-#include <exception>
+
 #include <glad/gl.h>
 #include <memory>
 #include <string>

@@ -45,7 +45,7 @@ namespace PeanutGL {
     };
 
     struct Width {
-        int val = 0;
+        int val{ 0 };
 
         template < typename T >
             requires std::same_as< T, int >
@@ -56,16 +56,13 @@ namespace PeanutGL {
             return val <=> other;
         }
 
-        // Delete the non const reference so the inner value can't accidently be changed.
-        auto operator()() -> int& = delete;
-
-        auto operator()() const -> int {
-            return val;
+        template < typename Self > auto operator()( this Self&& self ) {
+            return std::forward< Self >( self ).val;
         }
     };
 
     struct Height {
-        int val = 0;
+        int val{ 0 };
 
         template < typename T >
             requires std::same_as< T, int >
@@ -76,32 +73,25 @@ namespace PeanutGL {
             return val <=> other;
         }
 
-        // Delete the non const reference so the inner value can't accidently be changed.
-        auto operator()() -> int& = delete;
-
-        auto operator()() const -> int {
-            return val;
+        template < typename Self > auto operator()( this Self&& self ) {
+            return std::forward< Self >( self ).val;
         }
     };
 
     struct XAxis {
-        double val = 0.0;
-        // Partial_ordering: == and != are not defined.
+        double val{ 0.0 };
 
         template < typename T >
             requires std::same_as< T, double >
         explicit constexpr XAxis( T inner )
             : val{ inner } {};
 
+        // Partial_ordering: == and != are not defined.
         template < StrictCompareToFloat T > auto operator<=>( const T& other ) const {
             val <=> other;
         }
-
-        // Delete the non const reference so the inner value can't accidently be changed.
-        auto operator()() -> double& = delete;
-
-        auto operator()() const -> double {
-            return val;
+        template < typename Self > auto operator()( this Self&& self ) {
+            return std::forward< Self >( self ).val;
         }
 
         friend auto operator<<( std::ostream& _os, const XAxis& self ) -> std::ostream& {
@@ -119,14 +109,10 @@ namespace PeanutGL {
             : val{ inner } {};
 
         // Partial_ordering: == and != are not defined by the space ship operator because of floating point precision
-        // things
         auto operator<=>( const YAxis& other ) const = default;
 
-        // Delete the non const reference so the inner value can't accidently be changed.
-        auto operator()() -> double& = delete;
-
-        auto operator()() const -> double {
-            return val;
+        template < typename Self > auto operator()( this Self&& self ) {
+            return std::forward< Self >( self ).val;
         }
 
         friend auto operator<<( std::ostream& _os, const YAxis& self ) -> std::ostream& {

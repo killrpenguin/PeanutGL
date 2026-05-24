@@ -1,6 +1,7 @@
 set(INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(HEADER_LIST 
+	"${INCLUDE_PATH}/UniformResource.hpp"
 	"${INCLUDE_PATH}/PeanutGL.hpp"
 	"${INCLUDE_PATH}/MaterialResource.hpp"
 	"${INCLUDE_PATH}/RenderDocSystem.hpp"
@@ -24,23 +25,30 @@ set(HEADER_LIST
 	"${INCLUDE_PATH}/MeshComponent.hpp"
 	"${INCLUDE_PATH}/Entity.hpp"
 	"${INCLUDE_PATH}/ResourceManager.hpp"
+	"${INCLUDE_PATH}/ModelComponent.hpp"
+	"${INCLUDE_PATH}/ProjectionComponent.hpp"
+	"${INCLUDE_PATH}/ViewComponent.hpp"
 )
 
 set(SRC_LIST 
 	"STBImage.cpp"
 	"VertexArray.cpp"
 	"RenderDocSystem.cpp"
+	"ImGuiSystem.cpp"
 	"ResourceBase.cpp"
 	"PhysicsSystem.cpp"
 	"Engine.cpp"
 	"Entity.cpp"
-	"Component.cpp"
-	"MeshComponent.cpp"
-	"CameraComponent.cpp"
 	"Platform.cpp"
-	"ImGuiSystem.cpp"
 	"Renderer.cpp"
 	"ResourceManager.cpp"
+	"Component.cpp"
+	"ModelComponent.cpp"
+	"ViewComponent.cpp"
+	"ProjectionComponent.cpp"
+	"TransformComponent.cpp"
+	"MeshComponent.cpp"
+	"CameraComponent.cpp"
 )
 
 add_library(PeanutGL ${SRC_LIST} ${HEADER_LIST})

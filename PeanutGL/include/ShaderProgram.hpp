@@ -26,33 +26,36 @@
 
 #include <glad/gl.h>
 
+#include <glm/gtc/type_ptr.hpp>
 #include <quill/LogMacros.h>
 #include <string_view>
 #include <unordered_map>
 
 namespace PeanutGL {
+    struct uniform_info {
+        GLint location;
+        GLsizei count;
+        GLenum type;
+    };
     /**
      * @brief Class for representing a compiled OpenGL shader program.
      *
      * This class stores the OpenGL handle to a shader.
      */
     class ShaderProgram : public Resource {
-        struct uniform_info {
-            GLint location;
-            GLsizei count;
-            GLenum type;
-        };
+        using UniformMap     = std::unordered_map< std::string, uniform_info >;
+        using iterator       = UniformMap::iterator;
+        using const_iterator = UniformMap::const_iterator;
 
       private:
         unsigned int program_handle{};
-
-        std::unordered_map< std::string, uniform_info > uniforms{};
+        UniformMap uniforms{};
 
       public:
         ShaderProgram() noexcept = default;
 
         explicit ShaderProgram(
-            std::string_view identifier, const Shader& vert_shader, const Shader& frag_shader ) noexcept
+            std::string_view identifier, const VertShader& vert_shader, const FragShader& frag_shader ) noexcept
             : Resource( identifier ), program_handle{ link_shaders( vert_shader(), frag_shader() ) } {
             loaded = !compile_error( program_handle, "PROGRAM" );
         }
@@ -65,6 +68,19 @@ namespace PeanutGL {
         ~ShaderProgram() override {
             Unload();
             glDeleteProgram( program_handle );
+        }
+
+        auto begin() -> iterator {
+            return uniforms.begin();
+        }
+        auto end() -> iterator {
+            return uniforms.end();
+        }
+        auto cbegin() -> const_iterator {
+            return uniforms.cbegin();
+        }
+        auto cend() -> const_iterator {
+            return uniforms.cend();
         }
 
         auto Unload() noexcept -> void override {
@@ -85,6 +101,10 @@ namespace PeanutGL {
         }
 
         auto constexpr populate_uniforms() noexcept -> void;
+
+        auto Handle() const noexcept -> unsigned int {
+            return program_handle;
+        }
 
         template < typename T >
         constexpr auto SetUniform( const std::string& name, const T& value ) const noexcept -> void;
@@ -227,7 +247,7 @@ namespace PeanutGL {
         const std::string& name, const glm::mat< 2, 2, float >& value ) const noexcept -> void {
         if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
             glProgramUniformMatrix2fv(
-                program_handle, uni->second.location, uni->second.count, GL_FALSE, &value[0][0] );
+                program_handle, uni->second.location, uni->second.count, GL_FALSE, glm::value_ptr( value ) );
         } else {
             LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
         }
@@ -238,7 +258,7 @@ namespace PeanutGL {
         const std::string& name, const glm::mat< 3, 3, float >& value ) const noexcept -> void {
         if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
             glProgramUniformMatrix3fv(
-                program_handle, uni->second.location, uni->second.count, GL_FALSE, &value[0][0] );
+                program_handle, uni->second.location, uni->second.count, GL_FALSE, glm::value_ptr( value ) );
         } else {
             LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
         }
@@ -249,7 +269,7 @@ namespace PeanutGL {
         const std::string& name, const glm::mat< 4, 4, float >& value ) const noexcept -> void {
         if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
             glProgramUniformMatrix4fv(
-                program_handle, uni->second.location, uni->second.count, GL_FALSE, &value[0][0] );
+                program_handle, uni->second.location, uni->second.count, GL_FALSE, glm::value_ptr( value ) );
         } else {
             LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
         }
@@ -272,4 +292,5 @@ namespace PeanutGL {
         -> void {
         SetUniform( resource_handle->GetId(), resource_handle->TextureUnit() );
     }
+
 } // namespace PeanutGL

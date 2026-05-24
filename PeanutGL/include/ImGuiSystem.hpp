@@ -106,8 +106,8 @@ namespace PeanutGL {
         constexpr ImGuiSystem() noexcept = default;
 
         // NOLINTNEXTLINE
-        constexpr ImGuiSystem( Platform* platform, const int width, const int height ) {
-            if ( !Initialize( platform, width, height ) ) {
+        explicit ImGuiSystem( Platform* platform, const Width& width, const Height height ) {
+            if ( !Initialize( platform, width(), height() ) ) {
                 throw std::runtime_error( "ImGuiSystem: initialization failed" );
             }
         }
@@ -167,12 +167,11 @@ namespace PeanutGL {
         constexpr auto HandleResize( const Width new_width, const Height new_height ) noexcept -> void {
             if ( !initialized ) { return; }
 
-            this->width  = Width( width );
-            this->height = Height( height );
+            this->width  = new_width;
+            this->height = new_height;
 
-            ImGuiIO& input_output = ImGui::GetIO();
-            input_output.DisplaySize =
-                ImVec2( static_cast< float >( new_width() ), static_cast< float >( new_height() ) );
+            ImGuiIO& input_output    = ImGui::GetIO();
+            input_output.DisplaySize = ImVec2( static_cast< float >( width() ), static_cast< float >( height() ) );
         }
 
         /**

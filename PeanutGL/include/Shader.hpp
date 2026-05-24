@@ -33,7 +33,7 @@ namespace PeanutGL {
      *
      * This class stores the OpenGL handle to a shader.
      */
-    class Shader : public Resource {
+    template < GLenum T > class Shader : public Resource {
       private:
         GLenum type{};
         unsigned int shader_handle{};
@@ -41,8 +41,8 @@ namespace PeanutGL {
       public:
         Shader() noexcept = default;
 
-        explicit Shader( std::string_view identifier, GLenum shader_type ) noexcept
-            : Resource( identifier ), type{ shader_type } {
+        explicit Shader( std::string_view identifier ) noexcept
+            : Resource( identifier ), type{ T } {
         }
 
         // Delete the copy constructor and copy assignment operator. Resources are stored as unique pointers in
@@ -91,5 +91,6 @@ namespace PeanutGL {
             return shader_handle;
         }
     };
-
+    using VertShader = Shader< GL_VERTEX_SHADER >;
+    using FragShader = Shader< GL_FRAGMENT_SHADER >;
 } // namespace PeanutGL

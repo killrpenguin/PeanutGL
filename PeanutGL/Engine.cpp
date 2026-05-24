@@ -79,12 +79,12 @@ namespace PeanutGL {
 
     auto Engine::Initialize() -> bool {
         mainThreadId = std::this_thread::get_id();
-        static constexpr Width SCREENWIDTH{ 800 };
-        static constexpr Height SCREENHEIGHT{ 600 };
+        constexpr Width ScreenWidth{ 800 };
+        constexpr Height ScreenHeight{ 600 };
 
         platform = CreatePlatform();
 
-        if ( !platform->Initialize( "PeanutGL", SCREENWIDTH, SCREENHEIGHT ) ) {
+        if ( !platform->Initialize( "PeanutGL", ScreenWidth, ScreenHeight ) ) {
             throw std::runtime_error( "Could not initialize platform." );
         }
 
@@ -112,7 +112,7 @@ namespace PeanutGL {
         if ( !renderer->Initialize() ) { throw std::runtime_error( "Could not initialize renderer." ); }
 
         try {
-            imguiSystem = std::make_unique< ImGuiSystem >( platform.get(), SCREENWIDTH(), SCREENHEIGHT() );
+            imguiSystem = std::make_unique< ImGuiSystem >( platform.get(), ScreenWidth, ScreenHeight );
         } catch ( const std::exception& err ) {
             LOG_ERROR( QuillPtr(), "Subsystem initialization failed: {}", err.what() );
             return false;

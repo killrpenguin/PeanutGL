@@ -49,12 +49,8 @@ namespace PeanutGL {
         int stride{};
         std::vector< VertexBufferElement > layout{};
 
-        unsigned int VAO{};
-
         ResourceHandle< BufferResource< vertices_type > > vbo;
         ResourceHandle< BufferResource< indices_type > > ebo;
-
-        bool initialized{ false };
 
       public:
         /**
@@ -79,7 +75,7 @@ namespace PeanutGL {
         MeshComponent& operator=( MeshComponent&& )      = delete;
 
         ~MeshComponent() noexcept override {
-            glDeleteVertexArrays( 1, &VAO );
+            SetState( State::Destroyed );
         }
         /**
          * @brief Initialize the component.
@@ -96,12 +92,12 @@ namespace PeanutGL {
         /**
          * @brief Render the component.
          */
-        auto Render() const noexcept -> void;
+        auto Render() const noexcept -> void override;
 
         /**
          * @brief Define the vertex array attributes of the mesh.
-         * @param count The count of the element.
-         * @return A span of elements to pass to the SetLayout member function of a VAO resource.
+         * @param attrs .
+         * @return A span of elements for the SetLayout() member function of a VAO resource.
          */
         template < typename T >
         auto SetAttributes( const std::initializer_list< int > attrs ) noexcept
@@ -119,7 +115,7 @@ namespace PeanutGL {
                 layout.push_back( { .type = GL_FLOAT, .count = count, .normalized = GL_FALSE } );
                 stride += count * VertexBufferElement::size_of_enum_type( GL_FLOAT );
             }
-            initialized = true;
+            SetState();
             return { layout };
         }
 
@@ -136,7 +132,7 @@ namespace PeanutGL {
                 stride += count * VertexBufferElement::size_of_enum_type( GL_UNSIGNED_INT );
             }
 
-            initialized = true;
+            SetState();
             return { layout };
         }
 
@@ -152,7 +148,7 @@ namespace PeanutGL {
                 layout.push_back( { .type = GL_UNSIGNED_BYTE, .count = count, .normalized = GL_TRUE } );
                 stride += count * VertexBufferElement::size_of_enum_type( GL_UNSIGNED_BYTE );
             }
-            initialized = true;
+            SetState();
             return { layout };
         }
 
@@ -168,7 +164,7 @@ namespace PeanutGL {
          * @brief Set the Vertices of the mesh.
          * @param new_vertices The new indices.
          */
-        auto SetVertices( const std::span< indices_type > new_vertices ) noexcept -> void {
+        auto SetVertices( const std::span< const vertices_type > new_vertices ) noexcept -> void {
             vertices.assign( new_vertices.begin(), new_vertices.end() );
 
             if ( vbo ) { vbo->write( { vertices } ); }

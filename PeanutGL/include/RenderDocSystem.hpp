@@ -45,6 +45,13 @@ namespace PeanutGL {
         RenderDocSystem& operator=( const RenderDocSystem& ) = delete;
 
         /**
+         * @brief Initialize the singleton instance of the renderdoc system.
+         */
+        static void Initialize() noexcept {
+            static RenderDocSystem instance;
+        }
+
+        /**
          * @brief Get the singleton instance of the renderdoc system.
          * @return Reference to the renderdoc system instance.
          */

@@ -24,6 +24,7 @@
 #include <cstddef>
 
 #include <glad/gl.h>
+#include <numeric>
 #include <quill/LogMacros.h>
 
 namespace PeanutGL {
@@ -108,6 +109,8 @@ namespace PeanutGL {
 
         return static_cast< BufferTypePtr >( glMapNamedBufferRange( handle, 0, BUFFERSIZE, access_flags ) );
     }
+
     using ElementBuffer = BufferResource< unsigned int >;
     using VertexBuffer  = BufferResource< float >;
+
 } // namespace PeanutGL

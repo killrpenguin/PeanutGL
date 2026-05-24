@@ -23,16 +23,7 @@ namespace PeanutGL {
      * @brief Base class for all resources.
      */
     class Resource {
-      private:
-        template < typename Self > auto unload_inner( this Self&& self ) noexcept -> void {
-            std::forward< Self >( self ).Unload();
-        }
-
-        template < typename Self, typename Parent > auto load_inner( this Self&& self ) noexcept -> bool {
-            //            self.loaded = true;
-            return std::forward< Self >( self ).Load();
-        }
-
+    
       protected:
         std::string resourceId{};
         bool loaded{ false };

@@ -50,9 +50,7 @@ namespace PeanutGL {
 
         std::mutex mutex;
 
-        std::unordered_map< std::string, std::chrono::high_resolution_clock::time_point > measurements;
-
-        // Crash handler
+        std::unordered_map< std::string, std::chrono::high_resolution_clock::time_point > measurements{};
 
         std::function< void( const std::string& ) > crashHandler{};
 
@@ -71,8 +69,8 @@ namespace PeanutGL {
             quill::PatternFormatterOptions options{};
 
             // Strip common path prefixes to shorten source locations
-            options.source_location_path_strip_prefix = "/home/user/project/";
             // "/home/user/project/src/main.cpp:42" becomes "src/main.cpp:42"
+            options.source_location_path_strip_prefix = "/home/user/project/";
 
             // Remove relative path components like "../"
             options.source_location_remove_relative_paths = true;

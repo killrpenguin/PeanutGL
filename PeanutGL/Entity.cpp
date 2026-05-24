@@ -23,7 +23,6 @@
 #include <chrono>
 #include <cstddef>
 #include <functional>
-#include <type_traits>
 
 namespace PeanutGL {
     namespace chrono = std::chrono;
@@ -31,6 +30,7 @@ namespace PeanutGL {
     auto Entity::Initialize() -> void {
         for ( auto& component : components ) {
             component->Initialize();
+            component->SetOwner( this );
         }
     }
 

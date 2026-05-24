@@ -10,9 +10,7 @@
 #include "quill/LogMacros.h"
 
 #include <cstdint>
-#include <exception>
 #include <functional>
-#include <print>
 #include <stdexcept>
 #include <string>
 
@@ -53,6 +51,8 @@ namespace PeanutGL {
         if ( equal( gladLoadGL( glfwGetProcAddress ), 0 ) ) {
             throw std::runtime_error( std::string( "Failed to initialize GLAD." ) );
         }
+
+        glEnable( GL_DEPTH_TEST );
 
         glEnable( GL_DEBUG_OUTPUT );
         glEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS );

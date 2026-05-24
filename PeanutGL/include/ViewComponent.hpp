@@ -11,27 +11,33 @@
 
 namespace PeanutGL {
 
-    class TransformComponent final : public Component {
+    /**
+     * @brief View component.
+     *
+     * This class implements the component interface.
+     */
+    class ViewComponent final : public Component {
       private:
-        ResourceHandle< ShaderProgram > shader_program;
+        ResourceHandle< ShaderProgram > shader_program{};
+        float zAxis{};
 
       public:
-        TransformComponent() = delete;
+        ViewComponent() = delete;
         /**
          * @brief Constructor with an optional name.
          * @param handle The handle to the shader program.
          * @param componentName The name of the component.
          */
-        explicit TransformComponent(
-            // NOLINTNEXTLINE
-            const ResourceHandle< ShaderProgram > handle, const std::string& componentName = "transform" );
+        explicit ViewComponent(
+            const ResourceHandle< ShaderProgram >& handle, const float zAxis = -3.0F,
+            const std::string& componentName = "view" );
 
-        TransformComponent( const TransformComponent& )            = delete;
-        TransformComponent( TransformComponent&& )                 = delete;
-        TransformComponent& operator=( const TransformComponent& ) = delete;
-        TransformComponent& operator=( TransformComponent&& )      = delete;
+        ViewComponent( const ViewComponent& )            = delete;
+        ViewComponent( ViewComponent&& )                 = delete;
+        ViewComponent& operator=( const ViewComponent& ) = delete;
+        ViewComponent& operator=( ViewComponent&& )      = delete;
 
-        ~TransformComponent() noexcept override = default;
+        ~ViewComponent() noexcept override = default;
 
         /**
          * @brief Initialize the component.
@@ -50,4 +56,5 @@ namespace PeanutGL {
          */
         auto Render() const noexcept -> void override;
     };
+
 } // namespace PeanutGL

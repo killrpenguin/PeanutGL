@@ -41,16 +41,19 @@ namespace PeanutGL {
         if ( not_equal( camera, nullptr ) ) { /*placeholder*/
         }
 
-        // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-        glClearColor( 0.0F, 0.0F, 0.0F, 1.0F );
-        glClear( GL_COLOR_BUFFER_BIT );
+        constexpr float Alpha{ 1.0F };
+
+        glClearColor( 0.0F, 0.0F, 0.0F, Alpha );
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
         for ( const auto& entity : entities ) {
             entity->Render();
         }
 
-        constexpr GLsizei Count{ 6 };
-        glDrawElements( GL_TRIANGLES, Count, GL_UNSIGNED_INT, nullptr );
+        constexpr GLsizei Count{ 36 };
+        glDrawArrays( GL_TRIANGLES, 0, Count );
+
+        //        glDrawElements( GL_TRIANGLES, Count, GL_UNSIGNED_INT, nullptr );
 
         if ( not_equal( imguiSystem, nullptr ) ) { imguiSystem->Render(); }
 

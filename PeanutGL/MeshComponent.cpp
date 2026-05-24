@@ -17,26 +17,24 @@
  */
 
 #include "MeshComponent.hpp"
-#include "Entity.hpp"
-#include "TransformComponent.hpp"
+// #include "Entity.hpp"
+// #include "TransformComponent.hpp"
 
 #include <glad/gl.h>
 
 namespace PeanutGL {
     auto MeshComponent::Initialize() noexcept -> void {
-        if ( not_equal( layout.size(), 0 ) ) { initialized = true; }
+        if ( not_equal( layout.size(), 0 ) ) { SetState(); }
     }
 
     auto MeshComponent::Update( [[maybe_unused]] std::chrono::milliseconds deltaTime ) -> void {
-        Entity* owner{ GetOwner() };
-
-        TransformComponent* transform{ owner->GetComponent< TransformComponent >() };
-
-        if ( transform != nullptr ) {}
+        // Entity* owner{ GetOwner() };
+        // TransformComponent* transform{ owner->GetComponent< TransformComponent >() };
+        //
+        // if ( transform != nullptr ) { transform->Update( deltaTime ); }
     }
 
     auto MeshComponent::Render() const noexcept -> void {
-        glBindVertexArray( VAO );
     }
 
 } // namespace PeanutGL
