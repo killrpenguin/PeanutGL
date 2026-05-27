@@ -115,11 +115,12 @@ namespace PeanutGL {
          * Called every frame.
          * @param deltaTime The time elapsed since the last frame.
          */
-        auto Update( [[maybe_unused]] const std::chrono::milliseconds deltaTime ) -> void override {
-            // const std::chrono::milliseconds current_frame{ GetTime() };
-            // delta_time = current_frame - last_frame;
-            // last_frame = current_frame;
-        }
+        auto Update( [[maybe_unused]] const std::chrono::milliseconds deltaTime ) -> void override;
+        // {
+        // const std::chrono::milliseconds current_frame{ GetTime() };
+        // delta_time = current_frame - last_frame;
+        // last_frame = current_frame;
+        //        }
 
         /**
          * @brief Render the component.
