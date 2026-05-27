@@ -20,7 +20,7 @@
 
 #include "DebugSystem.hpp"
 #include "MaterialResource.hpp"
-#include "ResourceBase.hpp"
+#include "ResourceManager.hpp"
 #include "Shader.hpp"
 #include "Utilities.hpp"
 

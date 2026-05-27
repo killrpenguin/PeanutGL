@@ -2,14 +2,13 @@ set(INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(HEADER_LIST 
 	"${INCLUDE_PATH}/UniformResource.hpp"
-	"${INCLUDE_PATH}/PeanutGL.hpp"
+	"${INCLUDE_PATH}/ResourceManager.hpp"
 	"${INCLUDE_PATH}/MaterialResource.hpp"
 	"${INCLUDE_PATH}/RenderDocSystem.hpp"
 	"${INCLUDE_PATH}/DebugSystem.hpp"
 	"${INCLUDE_PATH}/CrashReporterSystem.hpp"
 	"${INCLUDE_PATH}/ShaderProgram.hpp"
 	"${INCLUDE_PATH}/Shader.hpp"
-	"${INCLUDE_PATH}/ResourceBase.hpp"
 	"${INCLUDE_PATH}/GeneratedConstants.hpp"
 	"${INCLUDE_PATH}/VertexArray.hpp"
 	"${INCLUDE_PATH}/Utilities.hpp"
@@ -24,7 +23,6 @@ set(HEADER_LIST
 	"${INCLUDE_PATH}/TransformComponent.hpp"
 	"${INCLUDE_PATH}/MeshComponent.hpp"
 	"${INCLUDE_PATH}/Entity.hpp"
-	"${INCLUDE_PATH}/ResourceManager.hpp"
 	"${INCLUDE_PATH}/ModelComponent.hpp"
 	"${INCLUDE_PATH}/ProjectionComponent.hpp"
 	"${INCLUDE_PATH}/ViewComponent.hpp"
@@ -32,16 +30,15 @@ set(HEADER_LIST
 
 set(SRC_LIST 
 	"STBImage.cpp"
+	"ResourceManager.cpp"
 	"VertexArray.cpp"
 	"RenderDocSystem.cpp"
 	"ImGuiSystem.cpp"
-	"ResourceBase.cpp"
 	"PhysicsSystem.cpp"
 	"Engine.cpp"
 	"Entity.cpp"
 	"Platform.cpp"
 	"Renderer.cpp"
-	"ResourceManager.cpp"
 	"Component.cpp"
 	"ModelComponent.cpp"
 	"ViewComponent.cpp"
@@ -50,6 +47,8 @@ set(SRC_LIST
 	"MeshComponent.cpp"
 	"CameraComponent.cpp"
 )
+
+set_source_files_properties(STBImage.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION TRUE)
 
 add_library(PeanutGL ${SRC_LIST} ${HEADER_LIST})
 

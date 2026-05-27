@@ -5,75 +5,23 @@
 #include "MaterialResource.hpp"
 #include "MeshComponent.hpp"
 #include "ModelComponent.hpp"
-#include "ViewComponent.hpp"
-#include "ResourceBase.hpp"
+#include "ProjectionComponent.hpp"
+#include "ResourceManager.hpp"
 #include "Shader.hpp"
 #include "ShaderProgram.hpp"
-#include "ProjectionComponent.hpp"
 #include "Utilities.hpp"
 #include "VertexArray.hpp"
+#include "ViewComponent.hpp"
 
-#include <array>
 #include <cassert>
 #include <span>
+#include <stdexcept>
 
-namespace {
-    // clang-format off
-    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-	constexpr std::array< PeanutGL::MeshComponent::vertices_type, 180 > CubeVerticies{
-			 -0.5F, -0.5F, -0.5F,  0.0F, 0.0F,
-     0.5F, -0.5F, -0.5F,  1.0F, 0.0F,
-     0.5F,  0.5F, -0.5F,  1.0F, 1.0F,
-     0.5F,  0.5F, -0.5F,  1.0F, 1.0F,
-    -0.5F,  0.5F, -0.5F,  0.0F, 1.0F,
-    -0.5F, -0.5F, -0.5F,  0.0F, 0.0F,
-
-    -0.5F, -0.5F,  0.5F,  0.0F, 0.0F,
-     0.5F, -0.5F,  0.5F,  1.0F, 0.0F,
-     0.5F,  0.5F,  0.5F,  1.0F, 1.0F,
-     0.5F,  0.5F,  0.5F,  1.0F, 1.0F,
-    -0.5F,  0.5F,  0.5F,  0.0F, 1.0F,
-    -0.5F, -0.5F,  0.5F,  0.0F, 0.0F,
-
-    -0.5F,  0.5F,  0.5F,  1.0F, 0.0F,
-    -0.5F,  0.5F, -0.5F,  1.0F, 1.0F,
-    -0.5F, -0.5F, -0.5F,  0.0F, 1.0F,
-    -0.5F, -0.5F, -0.5F,  0.0F, 1.0F,
-    -0.5F, -0.5F,  0.5F,  0.0F, 0.0F,
-    -0.5F,  0.5F,  0.5F,  1.0F, 0.0F,
-
-     0.5F,  0.5F,  0.5F,  1.0F, 0.0F,
-     0.5F,  0.5F, -0.5F,  1.0F, 1.0F,
-     0.5F, -0.5F, -0.5F,  0.0F, 1.0F,
-     0.5F, -0.5F, -0.5F,  0.0F, 1.0F,
-     0.5F, -0.5F,  0.5F,  0.0F, 0.0F,
-     0.5F,  0.5F,  0.5F,  1.0F, 0.0F,
-
-    -0.5F, -0.5F, -0.5F,  0.0F, 1.0F,
-     0.5F, -0.5F, -0.5F,  1.0F, 1.0F,
-     0.5F, -0.5F,  0.5F,  1.0F, 0.0F,
-     0.5F, -0.5F,  0.5F,  1.0F, 0.0F,
-    -0.5F, -0.5F,  0.5F,  0.0F, 0.0F,
-    -0.5F, -0.5F, -0.5F,  0.0F, 1.0F,
-
-    -0.5F,  0.5F, -0.5F,  0.0F, 1.0F,
-     0.5F,  0.5F, -0.5F,  1.0F, 1.0F,
-     0.5F,  0.5F,  0.5F,  1.0F, 0.0F,
-     0.5F,  0.5F,  0.5F,  1.0F, 0.0F,
-    -0.5F,  0.5F,  0.5F,  0.0F, 0.0F,
-    -0.5F,  0.5F, -0.5F,  0.0F, 1.0F
-		   };
-  
-    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-    // clang-format on
-
-} // namespace
 void PeanutGL::EngineSetup( Engine* const engine ) {
     const auto vert_shader{ engine->LoadResource< VertShader >( "TriangleVert" ) };
     const auto frag_shader{ engine->LoadResource< FragShader >( "TriangleFrag" ) };
 
     const auto VBO{ engine->LoadResource< VertexBuffer >( "VBO" ) };
-
     const auto VAO{ engine->LoadResource< VertexArray >( "VAO", VBO->Name(), Stride( 5 ) ) };
 
     const auto container{ engine->LoadResource< Texture2D >( "container.jpg", 0 ) };
@@ -87,13 +35,15 @@ void PeanutGL::EngineSetup( Engine* const engine ) {
 
         auto* const triangle_component{ triangle_entity->AddComponent< MeshComponent >( VBO ) };
 
-        //        (void)triangle_entity->AddComponent< TransformComponent >( shader_program );
-        (void)triangle_entity->AddComponent< ModelComponent >( shader_program );
+        auto* model{ triangle_entity->AddComponent< ModelComponent >( shader_program ) };
+        constexpr float Degrees{ 10.0F };
+        model->SetDegrees( Degrees );
+
         (void)triangle_entity->AddComponent< ViewComponent >( shader_program );
         (void)triangle_entity->AddComponent< ProjectionComponent >(
             shader_program, engine->GetPlatform()->GetWindowWidth(), engine->GetPlatform()->GetWindowHeight() );
 
-        /* Position, Color, Texture */
+        /* Position, Texture */
         const std::span< const VertexBufferElement > vao_layout{
             triangle_component->SetAttributes< VertexBuffer::BufferType >( { 3, 2 } )
         };
@@ -108,5 +58,7 @@ void PeanutGL::EngineSetup( Engine* const engine ) {
         triangle_component->SetIndices( { 0, 1, 3, 1, 2, 3 } );
 
         triangle_entity->Initialize();
+    } else {
+        throw std::runtime_error( "Found invalid resource handle during engine setup." );
     }
 }

@@ -21,7 +21,6 @@ namespace PeanutGL {
         Width width;
         Height height;
 
-        glm::mat4 projection{ 1.0F };
         ResourceHandle< ShaderProgram > shader_program{};
 
       public:

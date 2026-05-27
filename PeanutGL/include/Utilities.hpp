@@ -9,6 +9,8 @@
 #include <cstdlib>
 #include <fstream>
 #include <functional>
+#include <limits>
+#include <type_traits>
 
 namespace PeanutGL {
     namespace ranges = std::ranges;
@@ -42,6 +44,17 @@ namespace PeanutGL {
     template < typename T >
     concept StrictCompareToFloat = requires( int MyVal, T other ) {
         { MyVal <=> other } -> std::same_as< std::partial_ordering >;
+    };
+
+    template < typename T >
+    concept SafeFloat = requires( float MyVal, T other ) {
+        std::convertible_to< T, float > && std::numeric_limits< T >::is_iec559;
+        { float{ other } }; // Fails on narrowing convertions.
+    };
+
+    template < typename T >
+    concept PartiallyOrdered = requires( T lhs, T rhs ) {
+        { lhs <=> rhs } -> std::convertible_to< std::partial_ordering >;
     };
 
     struct Width {
@@ -101,7 +114,7 @@ namespace PeanutGL {
     };
 
     struct YAxis {
-        double val = 0.0;
+        double val{ 0.0 };
 
         template < typename T >
             requires std::same_as< T, double >
@@ -109,7 +122,7 @@ namespace PeanutGL {
             : val{ inner } {};
 
         // Partial_ordering: == and != are not defined by the space ship operator because of floating point precision
-        auto operator<=>( const YAxis& other ) const = default;
+        auto operator<=>( const YAxis& other ) const -> std::partial_ordering = default;
 
         template < typename Self > auto operator()( this Self&& self ) {
             return std::forward< Self >( self ).val;
@@ -119,6 +132,258 @@ namespace PeanutGL {
             _os << self.val;
             return _os;
         }
+    };
+
+    struct CameraAspectRatio {
+        constexpr static float DefaultValue{ 16.0F / 9.0F };
+
+        CameraAspectRatio() noexcept = default;
+
+        template < SafeFloat T >
+        explicit constexpr CameraAspectRatio( const T val ) noexcept
+            : val{ val } {};
+
+        explicit operator double() const {
+            return static_cast< double >( val );
+        };
+
+        explicit operator float() const {
+            return val;
+        };
+
+        auto operator<=>( const CameraAspectRatio& other ) const -> std::partial_ordering = default;
+
+        template < PartiallyOrdered T > auto operator<=>( T rhs ) const -> std::partial_ordering {
+            return val <=> rhs;
+        }
+
+        template < SafeFloat T > auto& operator=( T rhs ) {
+            this->val = std::forward< T >( rhs );
+            return *this;
+        }
+
+        template < typename Self > auto operator()( this Self&& self ) {
+            return std::forward< Self >( self ).val;
+        }
+
+      private:
+        float val{ DefaultValue };
+    };
+
+    struct FieldOfView {
+        constexpr static float DefaultValue{ 45.0F };
+
+        FieldOfView() noexcept = default;
+
+        template < SafeFloat T >
+        explicit constexpr FieldOfView( const T val ) noexcept
+            : val{ val } {};
+
+        explicit operator double() const {
+            return static_cast< double >( val );
+        };
+
+        explicit operator float() const {
+            return val;
+        };
+
+        auto operator<=>( const FieldOfView& other ) const -> std::partial_ordering = default;
+
+        template < PartiallyOrdered T > auto operator<=>( T rhs ) const -> std::partial_ordering {
+            return val <=> rhs;
+        }
+
+        template < SafeFloat T > auto& operator=( T rhs ) {
+            this->val = std::forward< T >( rhs );
+            return *this;
+        }
+
+        template < typename Self > auto operator()( this Self&& self ) {
+            return std::forward< Self >( self ).val;
+        }
+
+      private:
+        float val{ DefaultValue };
+    };
+
+    struct Zoom {
+        constexpr static float DefaultValue{ 45.0F };
+
+        Zoom() noexcept = default;
+
+        template < SafeFloat T >
+        explicit constexpr Zoom( const T val ) noexcept
+            : val{ val } {};
+
+        explicit operator double() const {
+            return static_cast< double >( val );
+        };
+
+        explicit operator float() const {
+            return val;
+        };
+
+        auto operator<=>( const Zoom& other ) const -> std::partial_ordering = default;
+
+        template < PartiallyOrdered T > auto operator<=>( T rhs ) const -> std::partial_ordering {
+            return val <=> rhs;
+        }
+
+        template < SafeFloat T > auto& operator=( T rhs ) {
+            this->val = std::forward< T >( rhs );
+            return *this;
+        }
+
+        template < typename Self > auto operator()( this Self&& self ) {
+            return std::forward< Self >( self ).val;
+        }
+
+      private:
+        float val{ DefaultValue };
+    };
+
+    struct MouseSensitivity {
+        constexpr static float DefaultValue{ 0.1F };
+
+        MouseSensitivity() noexcept = default;
+
+        template < SafeFloat T >
+        explicit constexpr MouseSensitivity( const T val ) noexcept
+            : val{ val } {};
+
+        explicit operator double() const {
+            return static_cast< double >( val );
+        };
+
+        explicit operator float() const {
+            return val;
+        };
+
+        auto operator<=>( const MouseSensitivity& other ) const -> std::partial_ordering = default;
+
+        template < PartiallyOrdered T > auto operator<=>( T rhs ) const -> std::partial_ordering {
+            return val <=> rhs;
+        }
+
+        template < SafeFloat T > auto& operator=( T rhs ) {
+            this->val = std::forward< T >( rhs );
+            return *this;
+        }
+
+        template < typename Self > auto operator()( this Self&& self ) {
+            return std::forward< Self >( self ).val;
+        }
+
+      private:
+        float val{ DefaultValue };
+    };
+
+    struct MovementSpeed {
+        constexpr static float DefaultValue{ 2.5F };
+
+        MovementSpeed() noexcept = default;
+
+        template < SafeFloat T >
+        explicit constexpr MovementSpeed( const T val ) noexcept
+            : val{ val } {};
+
+        explicit operator double() const {
+            return static_cast< double >( val );
+        };
+
+        explicit operator float() const {
+            return val;
+        };
+
+        auto operator<=>( const MovementSpeed& other ) const -> std::partial_ordering = default;
+
+        template < PartiallyOrdered T > auto operator<=>( T rhs ) const -> std::partial_ordering {
+            return val <=> rhs;
+        }
+
+        template < SafeFloat T > auto& operator=( T rhs ) {
+            this->val = std::forward< T >( rhs );
+            return *this;
+        }
+
+        template < typename Self > auto operator()( this Self&& self ) {
+            return std::forward< Self >( self ).val;
+        }
+
+      private:
+        float val{ DefaultValue };
+    };
+
+    struct Yaw {
+        constexpr static float DefaultValue{ -90.0F };
+
+        Yaw() noexcept = default;
+
+        template < SafeFloat T >
+        explicit constexpr Yaw( const T val ) noexcept
+            : val{ val } {};
+
+        explicit operator double() const {
+            return static_cast< double >( val );
+        };
+
+        explicit operator float() const {
+            return val;
+        };
+
+        auto operator<=>( const Yaw& other ) const -> std::partial_ordering = default;
+
+        template < PartiallyOrdered T > auto operator<=>( T rhs ) const -> std::partial_ordering {
+            return val <=> rhs;
+        }
+
+        template < SafeFloat T > auto& operator=( T rhs ) {
+            this->val = std::forward< T >( rhs );
+            return *this;
+        }
+
+        template < typename Self > auto operator()( this Self&& self ) {
+            return std::forward< Self >( self ).val;
+        }
+
+      private:
+        float val{ DefaultValue };
+    };
+
+    struct Pitch {
+        constexpr static float DefaultValue{ 0.0F };
+
+        Pitch() noexcept = default;
+
+        template < SafeFloat T >
+        explicit constexpr Pitch( const T val ) noexcept
+            : val{ val } {};
+
+        explicit operator double() const {
+            return static_cast< double >( val );
+        };
+
+        explicit operator float() const {
+            return val;
+        };
+
+        auto operator<=>( const Pitch& other ) const -> std::partial_ordering = default;
+
+        template < StrictCompareToFloat T > auto operator<=>( const T& other ) const -> std::partial_ordering {
+            return val <=> other;
+        }
+
+        template < SafeFloat T > auto& operator=( T other ) {
+            this->val = other;
+            return *this;
+        }
+
+        template < typename Self > auto operator()( this Self&& self ) {
+            return std::forward< Self >( self ).val;
+        }
+
+      private:
+        float val{ DefaultValue };
     };
 
     struct VertexBufferElement {
@@ -228,4 +493,54 @@ namespace PeanutGL {
         InActive,
         Destroyed
     };
+
+    // clang-format off
+    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+	constexpr static std::array< float, 180 > CubeVerticies{
+			 -0.5F, -0.5F, -0.5F,  0.0F, 0.0F,
+     0.5F, -0.5F, -0.5F,  1.0F, 0.0F,
+     0.5F,  0.5F, -0.5F,  1.0F, 1.0F,
+     0.5F,  0.5F, -0.5F,  1.0F, 1.0F,
+    -0.5F,  0.5F, -0.5F,  0.0F, 1.0F,
+    -0.5F, -0.5F, -0.5F,  0.0F, 0.0F,
+
+    -0.5F, -0.5F,  0.5F,  0.0F, 0.0F,
+     0.5F, -0.5F,  0.5F,  1.0F, 0.0F,
+     0.5F,  0.5F,  0.5F,  1.0F, 1.0F,
+     0.5F,  0.5F,  0.5F,  1.0F, 1.0F,
+    -0.5F,  0.5F,  0.5F,  0.0F, 1.0F,
+    -0.5F, -0.5F,  0.5F,  0.0F, 0.0F,
+
+    -0.5F,  0.5F,  0.5F,  1.0F, 0.0F,
+    -0.5F,  0.5F, -0.5F,  1.0F, 1.0F,
+    -0.5F, -0.5F, -0.5F,  0.0F, 1.0F,
+    -0.5F, -0.5F, -0.5F,  0.0F, 1.0F,
+    -0.5F, -0.5F,  0.5F,  0.0F, 0.0F,
+    -0.5F,  0.5F,  0.5F,  1.0F, 0.0F,
+
+     0.5F,  0.5F,  0.5F,  1.0F, 0.0F,
+     0.5F,  0.5F, -0.5F,  1.0F, 1.0F,
+     0.5F, -0.5F, -0.5F,  0.0F, 1.0F,
+     0.5F, -0.5F, -0.5F,  0.0F, 1.0F,
+     0.5F, -0.5F,  0.5F,  0.0F, 0.0F,
+     0.5F,  0.5F,  0.5F,  1.0F, 0.0F,
+
+    -0.5F, -0.5F, -0.5F,  0.0F, 1.0F,
+     0.5F, -0.5F, -0.5F,  1.0F, 1.0F,
+     0.5F, -0.5F,  0.5F,  1.0F, 0.0F,
+     0.5F, -0.5F,  0.5F,  1.0F, 0.0F,
+    -0.5F, -0.5F,  0.5F,  0.0F, 0.0F,
+    -0.5F, -0.5F, -0.5F,  0.0F, 1.0F,
+
+    -0.5F,  0.5F, -0.5F,  0.0F, 1.0F,
+     0.5F,  0.5F, -0.5F,  1.0F, 1.0F,
+     0.5F,  0.5F,  0.5F,  1.0F, 0.0F,
+     0.5F,  0.5F,  0.5F,  1.0F, 0.0F,
+    -0.5F,  0.5F,  0.5F,  0.0F, 0.0F,
+    -0.5F,  0.5F, -0.5F,  0.0F, 1.0F
+		   };
+  
+    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
+    // clang-format on
+
 } // namespace PeanutGL

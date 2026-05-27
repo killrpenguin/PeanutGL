@@ -20,7 +20,7 @@
 
 #include "DebugSystem.hpp"
 #include "GeneratedConstants.hpp"
-#include "ResourceBase.hpp"
+#include "ResourceManager.hpp"
 #include "Utilities.hpp"
 
 #include <glad/gl.h>
@@ -107,6 +107,7 @@ namespace PeanutGL {
 
         auto Unload() noexcept -> void override {
             glDeleteTextures( 1, &handle );
+            loaded = false;
         }
 
         auto Load() noexcept -> bool override {
@@ -114,7 +115,7 @@ namespace PeanutGL {
 
             if ( equal( pixels, nullptr ) ) {
                 LOG_WARNING( QuillPtr(), "Image library could not load {}.", file_name.string() );
-                return false;
+                return loaded;
             }
 
             glCreateTextures( Target, 1, &handle );
@@ -131,7 +132,9 @@ namespace PeanutGL {
 
             stbi_image_free( pixels );
 
-            return true;
+            loaded = true;
+
+            return loaded;
         }
 
         constexpr auto SetTextureUnit( const unsigned int unit ) const noexcept -> void {

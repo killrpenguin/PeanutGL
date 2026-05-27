@@ -54,5 +54,10 @@ namespace PeanutGL {
          * @brief Render the component.
          */
         auto Render() const noexcept -> void override;
+
+        /**
+         * @brief Set the degrees.
+         */
+        auto SetDegrees( const float val ) noexcept -> void;
     };
 } // namespace PeanutGL

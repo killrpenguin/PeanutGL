@@ -20,7 +20,7 @@
 #include "BufferResource.hpp"
 #include "Component.hpp"
 #include "DebugSystem.hpp"
-#include "ResourceBase.hpp"
+#include "ResourceManager.hpp"
 #include "Utilities.hpp"
 
 #include <cassert>

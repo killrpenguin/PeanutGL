@@ -19,230 +19,151 @@
 #pragma once
 
 #include "Component.hpp"
+#include "Utilities.hpp"
 
+#include <GLFW/glfw3.h>
+#include <chrono>
+#include <glm/ext/vector_float3.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
 namespace PeanutGL {
+    enum class CameraMovement : std::uint8_t {
+        FORWARD,
+        BACKWARD,
+        LEFT,
+        RIGHT,
+        UP,
+        DOWN
+    };
 
-    class CameraComponent : public Component {
-      public:
-        enum class ProjectionType : std::uint8_t {
-            Perspective,
-            Orthographic
-        };
+    /**
+     * @brief A flying camera component.
+     *
+     * This class implements the component interface.
+     */
+    class CameraComponent final : public Component {
+        constexpr static float DefaultAspectRatio{};
 
       private:
-        ProjectionType projectionType = ProjectionType::Perspective;
+        glm::vec3 position{ 0.0F, 0.0F, 0.0F };
+        glm::vec3 front{ 0.0F, 0.0F, -1.0F };
+        glm::vec3 up{ 0.0F, 1.0F, 0.0F };
+        glm::vec3 right{};
+        glm::vec3 world_up{ 0.0F, 1.0F, 0.0F };
+
+        // euler Angles
+        Yaw yaw{};
+        Pitch pitch{};
+
+        // camera options
+        MovementSpeed movement_speed{};
+        MouseSensitivity mouse_sensitivity{};
+        Zoom zoom{};
 
         // Perspective projection parameters
-        float fieldOfView = 45.0F;
-        float aspectRatio = 16.0F / 9.0F;
+        FieldOfView field_of_view{};
+        CameraAspectRatio aspect_ratio{};
 
-        // Orthographic projection parameters
-        float orthoWidth  = 10.0F;
-        float orthoHeight = 10.0F;
+        std::chrono::milliseconds delta_time{};
+        std::chrono::milliseconds last_frame{};
 
-        // Common parameters
-        float nearPlane = 0.1F;
-        float farPlane  = 100.0F;
+        auto UpdateCameraVectors() noexcept -> void {
+            const float frontX{ glm::cos( glm::radians( yaw() ) ) * glm::cos( glm::radians( pitch() ) ) };
+            const float frontY{ glm::sin( glm::radians( pitch() ) ) };
+            const float frontZ{ glm::sin( glm::radians( yaw() ) ) * glm::cos( glm::radians( pitch() ) ) };
 
-        // Matrices
-        glm::mat4 viewMatrix       = glm::mat4( 1.0F );
-        glm::mat4 projectionMatrix = glm::mat4( 1.0F );
+            front = glm::normalize( glm::vec3( frontX, frontY, frontZ ) );
 
-        // Camera properties
-        glm::vec3 target = { 0.0F, 0.0F, 0.0F };
-        glm::vec3 up     = { 0.0F, 1.0F, 0.0F };
+            right = glm::normalize( glm::cross( front, world_up ) );
 
-        bool viewMatrixDirty       = true;
-        bool projectionMatrixDirty = true;
+            up = glm::normalize( glm::cross( right, front ) );
+        }
+
+        constexpr auto static GetTime() noexcept -> std::chrono::milliseconds {
+            const std::chrono::duration< double > seconds{ glfwGetTime() };
+            return std::chrono::duration_cast< std::chrono::milliseconds >( seconds );
+        }
 
       public:
+        CameraComponent() noexcept = default;
+
         /**
-         * @brief Constructor with optional name.
+         * @brief Constructor with an optional name.
          * @param componentName The name of the component.
          */
-        explicit CameraComponent( const std::string& componentName = "CameraComponent" )
-            : Component{ componentName } {
+        explicit CameraComponent( const std::string& componentName = "Camera" )
+            : Component( componentName ) {
+            Initialize();
+            UpdateCameraVectors();
+        };
+
+        CameraComponent( const CameraComponent& )            = delete;
+        CameraComponent( CameraComponent&& )                 = delete;
+        CameraComponent& operator=( const CameraComponent& ) = delete;
+        CameraComponent& operator=( CameraComponent&& )      = delete;
+
+        ~CameraComponent() noexcept override = default;
+
+        /**
+         * @brief Initialize the component.
+         */
+        auto Initialize() noexcept -> void override;
+
+        /**
+         * @brief Update the component.
+         * Called every frame.
+         * @param deltaTime The time elapsed since the last frame.
+         */
+        auto Update( [[maybe_unused]] const std::chrono::milliseconds deltaTime ) -> void override {
+            // const std::chrono::milliseconds current_frame{ GetTime() };
+            // delta_time = current_frame - last_frame;
+            // last_frame = current_frame;
         }
 
         /**
-         * @brief Initialize the camera component.
+         * @brief Render the component.
          */
-        auto Initialize() noexcept -> void;
-
-        /**
-         * @brief Set the projection type.
-         * @param type The projection type.
-         */
-        void SetProjectionType( ProjectionType type ) {
-            projectionType        = type;
-            projectionMatrixDirty = true;
-        }
-
-        /**
-         * @brief Get the projection type.
-         * @return The projection type.
-         */
-        [[nodiscard]] ProjectionType GetProjectionType() const {
-            return projectionType;
-        }
-
-        /**
-         * @brief Set the field of view for perspective projection.
-         * @param fov The field of view in degrees.
-         */
-        void SetFieldOfView( float fov ) {
-            fieldOfView           = fov;
-            projectionMatrixDirty = true;
-        }
-
-        /**
-         * @brief Get the field of view.
-         * @return The field of view in degrees.
-         */
-        [[nodiscard]] float GetFieldOfView() const {
-            return fieldOfView;
-        }
+        auto Render() const noexcept -> void override;
 
         /**
          * @brief Set the aspect ratio for perspective projection.
          * @param ratio The aspect ratio (width / height).
          */
-        void SetAspectRatio( float ratio ) {
-            aspectRatio           = ratio;
-            projectionMatrixDirty = true;
+        auto SetAspectRatio( const float ratio ) noexcept -> void {
+            aspect_ratio = ratio;
         }
 
         /**
-         * @brief Get the aspect ratio.
-         * @return The aspect ratio.
+         * @brief Get the view matrix calculated using Euler Angles.
          */
-        [[nodiscard]] float GetAspectRatio() const {
-            return aspectRatio;
+        auto GetViewMatrix() const noexcept -> glm::mat4 {
+            return glm::lookAt( position, position + front, up );
         }
-
-        /**
-         * @brief Set the orthographic width and height.
-         * @param width The width of the orthographic view.
-         * @param height The height of the orthographic view.
-         */
-        void SetOrthographicSize( float width, float height ) {
-            orthoWidth            = width;
-            orthoHeight           = height;
-            projectionMatrixDirty = true;
-        }
-
-        /**
-         * @brief Set the near and far planes.
-         * @param near The near plane distance.
-         * @param far The far plane distance.
-         */
-        void SetClipPlanes( float near, float far ) {
-            nearPlane             = near;
-            farPlane              = far;
-            projectionMatrixDirty = true;
-        }
-
-        [[nodiscard]] float GetNearPlane() const {
-            return nearPlane;
-        }
-
-        [[nodiscard]] float GetFarPlane() const {
-            return farPlane;
-        }
-
-        /**
-         * @brief Set the camera target.
-         * @param newTarget The new target position.
-         */
-        void SetTarget( const glm::vec3& newTarget ) {
-            target          = newTarget;
-            viewMatrixDirty = true;
-        }
-
-        /**
-         * @brief Set the camera up vector.
-         * @param newUp The new up vector.
-         */
-        void SetUp( const glm::vec3& newUp ) {
-            up              = newUp;
-            viewMatrixDirty = true;
-        }
-
-        /**
-         * @brief Make the camera look at a specific target position.
-         * @param targetPosition The position to look at.
-         * @param upVector The up vector (optional, defaults to current up vector).
-         */
-        void LookAt( const glm::vec3& targetPosition, const glm::vec3& upVector = glm::vec3( 0.0F, 1.0F, 0.0F ) ) {
-            target          = targetPosition;
-            up              = upVector;
-            viewMatrixDirty = true;
-        }
-
-        /**
-         * @brief Get the view matrix.
-         * @return The view matrix.
-         */
-        const glm::mat4& GetViewMatrix();
-
-        /**
-         * @brief Get the projection matrix.
-         * @return The projection matrix.
-         */
-        const glm::mat4& GetProjectionMatrix();
 
         /**
          * @brief Get the camera position.
          * @return The camera position.
          */
-        [[nodiscard]] glm::vec3 GetPosition() const {
-            // auto transform = GetOwner()->GetComponent< TransformComponent >();
-            // return transform ? transform->GetPosition() :
-
-            //  TODO: STUB member function is returning invalid data.
-
-            return target;
+        auto GetPosition() const noexcept -> glm::vec3 {
+            return position;
         }
 
         /**
-         * @brief Get the camera target.
-         * @return The camera target.
+         * @brief Get the camera front value.
+         * @return The camera position.
          */
-        [[nodiscard]] const glm::vec3& GetTarget() const {
-            return target;
+        auto GetFront() const noexcept -> glm::vec3 {
+            return front;
         }
 
         /**
-         * @brief Get the camera up vector.
-         * @return The camera up vector.
+         * @brief Get the camera front value.
+         * @return The camera position.
          */
-        [[nodiscard]] const glm::vec3& GetUp() const {
-            return up;
+        auto GetZoom() const noexcept -> float {
+            return zoom();
         }
-
-        /**
-         * @brief Force view matrix recalculation without modifying camera orientation.
-         * This is used when the camera's transform position changes externally (e.g., from GLTF loading).
-         */
-        void ForceViewMatrixUpdate() {
-            viewMatrixDirty = true;
-        }
-
-      private:
-        /**
-         * @brief Update the view matrix based on the camera position and target.
-         */
-        void UpdateViewMatrix();
-
-        /**
-         * @brief Update the projection matrix based on the projection type and parameters.
-         */
-        void UpdateProjectionMatrix();
     };
 
 } // namespace PeanutGL
-// NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)

@@ -40,12 +40,13 @@ namespace PeanutGL {
      * Each component encapsulates a specific behavior or property.
      */
     class Component {
-      public:
       private:
         Entity* owner{ nullptr };
         std::string name;
         State state{ State::Uninitialized };
 
+	  
+      
       public:
         // Deleted to eliminate the chances of object slicing.
         Component( const Component& )            = delete;

@@ -24,7 +24,6 @@
 #include "PhysicsSystem.hpp"
 #include "Platform.hpp"
 #include "Renderer.hpp"
-#include "ResourceBase.hpp"
 #include "ResourceManager.hpp"
 #include "Utilities.hpp"
 

@@ -19,12 +19,13 @@
 #pragma once
 
 #include "BufferResource.hpp"
-#include "ResourceBase.hpp"
+#include "ResourceManager.hpp"
 #include "Utilities.hpp"
 
 #include <glad/gl.h>
 
 #include <cassert>
+#include <numeric>
 
 namespace PeanutGL {
 
@@ -69,8 +70,8 @@ namespace PeanutGL {
             const std::string& identifier, const unsigned int vbo, const unsigned int ebo,
             const Stride stride ) noexcept
             : Resource( identifier ), vbo_name{ vbo }, ebo_name{ ebo }, stride{ stride } {
-          Load();
-          assert(VAO != 0);
+            Load();
+            assert( VAO != 0 );
         };
 
         VertexArray( const VertexArray& )                = delete;

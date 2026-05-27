@@ -19,12 +19,11 @@
 #pragma once
 
 #include "DebugSystem.hpp"
-#include "ResourceBase.hpp"
+#include "ResourceManager.hpp"
 #include "Utilities.hpp"
 #include <cstddef>
 
 #include <glad/gl.h>
-#include <numeric>
 #include <quill/LogMacros.h>
 
 namespace PeanutGL {

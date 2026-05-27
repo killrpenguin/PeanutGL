@@ -19,7 +19,7 @@
 #pragma once
 
 #include "GeneratedConstants.hpp"
-#include "ResourceBase.hpp"
+#include "ResourceManager.hpp"
 #include "Utilities.hpp"
 
 #include "quill/LogMacros.h"
