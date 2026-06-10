@@ -19,7 +19,7 @@
 #include <GLFW/glfw3.h>
 #include <glad/gl.h>
 
-#include "CrashReporterSystem.hpp"
+#include "CameraComponent.hpp"
 #include "DebugSystem.hpp"
 #include "Engine.hpp"
 #include "Entity.hpp"
@@ -34,10 +34,10 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
-#include <cstdint>
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <ranges>
 #include <shared_mutex>
 #include <stdexcept>
 #include <string>
@@ -89,12 +89,12 @@ namespace PeanutGL {
         }
 
         platform->SetWindowResizeCallback(
-            [this]( const Width width, const Height height ) { HandleResize( width, height ); } );
+            [this]( const Width width, const Height height ) -> void { HandleResize( width, height ); } );
 
         platform->SetFramebufferResizeCallback(
-            [this]( const Width width, const Height height ) { HandleResize( width, height ); } );
+            [this]( const Width width, const Height height ) -> void { HandleResize( width, height ); } );
 
-        platform->SetMouseCallback( [this]( const XAxis x, const YAxis y, std::uint32_t buttons ) {
+        platform->SetMouseCallback( [this]( const XAxis x, const YAxis y, std::uint32_t buttons ) -> void {
             this->handleMouseInput( x, y, buttons );
         } );
 
@@ -201,6 +201,18 @@ namespace PeanutGL {
 
             initialized = false;
         }
+    }
+
+    auto Engine::SetActiveCamera( CameraComponent* const cameraComponent ) noexcept -> void {
+        if ( equal( cameraComponent, nullptr ) ) {
+            LOG_WARNING( QuillPtr(), "Attempting to set active camera to nullptr." );
+            return;
+        }
+        activeCamera = cameraComponent;
+    }
+
+    auto Engine::GetActiveCamera() const -> const CameraComponent* {
+        return activeCamera;
     }
 
     auto Engine::CreateEntity( const std::string& name ) noexcept -> Entity* {
@@ -328,11 +340,11 @@ namespace PeanutGL {
             return;
         }
 
-        if ( not_equal( activeCamera, nullptr ) ) {
-            // NOLINTNEXTLINE(misc-include-cleaner)
-            const glm::vec3 currentCameraPosition{ activeCamera->GetPosition() };
-            physicsSystem->SetCameraPosition( currentCameraPosition );
-        }
+        // if ( not_equal( activeCamera, nullptr ) ) {
+        //     // NOLINTNEXTLINE(misc-include-cleaner)
+        //     const glm::vec3 currentCameraPosition{ activeCamera->GetPosition() };
+        //     physicsSystem->SetCameraPosition( currentCameraPosition );
+        // }
 
         physicsSystem->Update( deltaTime );
 
@@ -401,24 +413,33 @@ namespace PeanutGL {
     auto Engine::handleMouseInput( const XAxis mouseX, const YAxis mouseY, std::uint32_t buttons ) noexcept -> void {
         const bool imguiWantsMouse{ imguiSystem and imguiSystem->WantCaptureMouse() };
 
-        // Suppress right-click while loading
-        if ( renderer and renderer->IsLoading() ) {
-            buttons &= ~2U; // clear right button bit
-        }
-
         if ( !imguiWantsMouse ) {
-            // TODO: handle camera positioning here
+            auto xpos = static_cast< float >( mouseX() );
+            auto ypos = static_cast< float >( mouseY() );
+
+            if ( cameraControl.firstMouse ) {
+                cameraControl.lastMouseX = static_cast< float >( mouseX() );
+                cameraControl.lastMouseY = static_cast< float >( mouseY() );
+                cameraControl.firstMouse = false;
+            }
+
+            float xoffset = xpos - cameraControl.lastMouseX;
+            float yoffset = cameraControl.lastMouseY - ypos; // reversed since y-coordinates go from bottom to top
+
+            cameraControl.lastMouseX = xpos;
+            cameraControl.lastMouseY = ypos;
+
+            cameraControl.yaw   += xoffset;
+            cameraControl.pitch += yoffset;
+
+            constexpr float PitchBound{ 89.0F };
+            constexpr float NegPitchBound{ -89.0F };
+
+            cameraControl.pitch = ranges::min( cameraControl.pitch, PitchBound );
+            cameraControl.pitch = ranges::max( cameraControl.pitch, NegPitchBound );
         }
 
         if ( imguiSystem ) { imguiSystem->HandleMouse( mouseX, mouseY, buttons ); }
-
-        // Uncomment for visual validation..
-        // switch ( buttons ) {
-        //     case 1 : LOG_DEBUG( QuillPtr(), "Left mouse button pressed." ); break;
-        //     case 2 : LOG_DEBUG( QuillPtr(), "Right mouse button pressed." ); break;
-        //     case 4 : LOG_DEBUG( QuillPtr(), "Middle mouse button pressed." ); break;
-        //     default: break;
-        // }
 
         HandleMouseHover( mouseX, mouseY );
     }
@@ -445,34 +466,74 @@ namespace PeanutGL {
     auto Engine::handleKeyInput( const std::uint32_t key, const bool pressed ) noexcept -> void {
         if ( !pressed ) { return; }
         switch ( key ) {
-            case GLFW_KEY_W:
-            case GLFW_KEY_UP       : LOG_INFO( QuillPtr(), "Forward." ); break;
+            case GLFW_KEY_ESCAPE   : glfwSetWindowShouldClose( platform->GetWindow(), 1 ); break;
+
+            case GLFW_KEY_W        :
+            case GLFW_KEY_UP       : cameraControl.moveForward = pressed; break;
 
             case GLFW_KEY_S        :
-            case GLFW_KEY_DOWN     : LOG_DEBUG( QuillPtr(), "Backward." ); break;
+            case GLFW_KEY_DOWN     : cameraControl.moveBackward = pressed; break;
 
             case GLFW_KEY_A        :
-            case GLFW_KEY_LEFT     : LOG_DEBUG( QuillPtr(), "Right." ); break;
+            case GLFW_KEY_LEFT     : cameraControl.moveLeft = pressed; break;
 
             case GLFW_KEY_D        :
-            case GLFW_KEY_RIGHT    : LOG_DEBUG( QuillPtr(), "Left." ); break;
+            case GLFW_KEY_RIGHT    : cameraControl.moveRight = pressed; break;
 
             case GLFW_KEY_Q        :
-            case GLFW_KEY_PAGE_UP  : LOG_DEBUG( QuillPtr(), "Up." ); break;
+            case GLFW_KEY_PAGE_UP  : cameraControl.moveUp = pressed; break;
 
             case GLFW_KEY_E        :
-            case GLFW_KEY_PAGE_DOWN: LOG_DEBUG( QuillPtr(), "Down." ); break;
+            case GLFW_KEY_PAGE_DOWN: cameraControl.moveDown = pressed; break;
 
-            case GLFW_KEY_ESCAPE   : glfwSetWindowShouldClose( platform->GetWindow(), 1 ); break;
-            // case GLFW_KEY_ENTER    : RenderDocSystem::Get().TriggerCapture(); break;
             default                : break;
         }
 
         if ( imguiSystem ) { imguiSystem->HandleKeyboard( key, pressed ); }
     }
 
-    auto Engine::UpdateCameraControls( [[maybe_unused]] const TimeDelta deltaTime ) noexcept -> void {
-        if ( not_equal( activeCamera, nullptr ) ) { return; }
-        // TODO: UNIMPLEMENTED.
+    auto Engine::UpdateCameraControls( const TimeDelta deltaTime ) noexcept -> void {
+        if ( equal( activeCamera, nullptr ) ) { return; }
+
+        auto* cameraTransform = activeCamera->GetOwner()->GetComponent< CameraComponent >();
+        if ( equal( cameraTransform, nullptr ) ) { return; }
+
+        constexpr float VelocityConst{ 0.001F };
+
+        float velocity = cameraControl.cameraSpeed * static_cast< float >( deltaTime.count() ) * VelocityConst;
+
+        // Apply movement based on input
+        if ( cameraControl.moveForward ) {
+            cameraTransform->UpdateMovement( CameraMovement::FORWARD, velocity );
+            cameraControl.moveForward = false;
+        }
+        if ( cameraControl.moveBackward ) {
+            cameraTransform->UpdateMovement( CameraMovement::BACKWARD, velocity );
+            cameraControl.moveBackward = false;
+        }
+        if ( cameraControl.moveLeft ) {
+            cameraTransform->UpdateMovement( CameraMovement::LEFT, velocity );
+            cameraControl.moveLeft = false;
+        }
+        if ( cameraControl.moveRight ) {
+            cameraTransform->UpdateMovement( CameraMovement::RIGHT, velocity );
+            cameraControl.moveRight = false;
+        }
+        if ( cameraControl.moveUp ) {
+            cameraTransform->UpdateMovement( CameraMovement::UP, velocity );
+            cameraControl.moveUp = false;
+        }
+        if ( cameraControl.moveDown ) {
+            cameraTransform->UpdateMovement( CameraMovement::DOWN, velocity );
+            cameraControl.moveDown = false;
+        }
+
+        cameraTransform->SetPitch( cameraControl.pitch );
+
+        cameraTransform->SetYaw( cameraControl.yaw );
+
+        cameraTransform->UpdateCameraVectors();
+
     }
+
 } // namespace PeanutGL

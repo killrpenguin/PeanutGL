@@ -28,6 +28,7 @@
 #include <string>
 
 namespace PeanutGL {
+
     /**
      * @brief Class for representing a compiled OpenGL shader.
      *
@@ -78,7 +79,8 @@ namespace PeanutGL {
 
             const unsigned int shader{ compile_shader( type, shader_source ) };
 
-            if ( loaded = !compile_error( shader, resourceId ); loaded ) { shader_handle = shader; }
+            // if ( loaded = !compile_error( shader, resourceId ); loaded ) { shader_handle = shader; }
+            if ( loaded = !compile_error( shader ); loaded ) { shader_handle = shader; }
 
             return loaded;
         }

@@ -1,8 +1,10 @@
 set(INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(HEADER_LIST 
+	"${INCLUDE_PATH}/BufferObjectResource.hpp"
 	"${INCLUDE_PATH}/UniformResource.hpp"
 	"${INCLUDE_PATH}/ResourceManager.hpp"
+	"${INCLUDE_PATH}/MemoryBarrierResource.hpp"
 	"${INCLUDE_PATH}/MaterialResource.hpp"
 	"${INCLUDE_PATH}/RenderDocSystem.hpp"
 	"${INCLUDE_PATH}/DebugSystem.hpp"
@@ -12,6 +14,8 @@ set(HEADER_LIST
 	"${INCLUDE_PATH}/GeneratedConstants.hpp"
 	"${INCLUDE_PATH}/VertexArray.hpp"
 	"${INCLUDE_PATH}/Utilities.hpp"
+	"${INCLUDE_PATH}/UtilityVerticies.hpp"
+	"${INCLUDE_PATH}/UtilityTypes.hpp"
 	"${INCLUDE_PATH}/PhysicsSystem.hpp"
 	"${INCLUDE_PATH}/Engine.hpp"
 	"${INCLUDE_PATH}/EntryPoint.hpp"
@@ -26,6 +30,7 @@ set(HEADER_LIST
 	"${INCLUDE_PATH}/ModelComponent.hpp"
 	"${INCLUDE_PATH}/ProjectionComponent.hpp"
 	"${INCLUDE_PATH}/ViewComponent.hpp"
+	"${INCLUDE_PATH}/ShaderBufferResource.hpp"
 )
 
 set(SRC_LIST 
@@ -46,6 +51,7 @@ set(SRC_LIST
 	"TransformComponent.cpp"
 	"MeshComponent.cpp"
 	"CameraComponent.cpp"
+	"BufferObjectResource.cpp"
 )
 
 set_source_files_properties(STBImage.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION TRUE)

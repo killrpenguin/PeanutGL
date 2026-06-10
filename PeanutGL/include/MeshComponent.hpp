@@ -17,10 +17,8 @@
  */
 
 #pragma once
-#include "BufferResource.hpp"
 #include "Component.hpp"
 #include "DebugSystem.hpp"
-#include "ResourceManager.hpp"
 #include "Utilities.hpp"
 
 #include <cassert>
@@ -29,7 +27,6 @@
 #include <quill/LogMacros.h>
 #include <span>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace PeanutGL {
@@ -37,10 +34,10 @@ namespace PeanutGL {
     /**
      * @brief Component that handles the mesh data of an entity.
      */
-    class MeshComponent final : public Component {
+    template < typename VerticesType, typename IndicesType > class MeshComponent final : public Component {
       public:
-        using vertices_type = float;
-        using indices_type  = unsigned int;
+        using vertices_type = VerticesType;
+        using indices_type  = IndicesType;
 
       private:
         std::vector< vertices_type > vertices{};
@@ -49,26 +46,21 @@ namespace PeanutGL {
         int stride{};
         std::vector< VertexBufferElement > layout{};
 
-        ResourceHandle< BufferResource< vertices_type > > vbo;
-        ResourceHandle< BufferResource< indices_type > > ebo;
-
       public:
+        explicit MeshComponent( const std::string& componentName = "MeshComponent" ) noexcept
+            : Component( componentName ) {
+        }
+
         /**
          * @brief Constructor with an optional name.
          * @param componentName The name of the component.
          */
         explicit MeshComponent(
-            ResourceHandle< BufferResource< vertices_type > > mesh_resource,
-            const std::string& componentName = "MeshComponent" ) noexcept
-            : Component( componentName ), vbo{ std::move( mesh_resource ) } {
+            const std::span< const vertices_type > rng, const std::string& componentName = "MeshComponent" ) noexcept
+            : Component( componentName ) {
+            vertices.assign( rng.begin(), rng.end() );
         }
 
-        explicit MeshComponent(
-            ResourceHandle< BufferResource< vertices_type > > vbo_resource,
-            ResourceHandle< BufferResource< indices_type > > ebo_resource,
-            const std::string& componentName = "MeshComponent" ) noexcept
-            : Component( componentName ), vbo{ std::move( vbo_resource ) }, ebo{ std::move( ebo_resource ) } {
-        }
         MeshComponent( const MeshComponent& )            = delete;
         MeshComponent( MeshComponent&& )                 = delete;
         MeshComponent& operator=( const MeshComponent& ) = delete;
@@ -77,6 +69,7 @@ namespace PeanutGL {
         ~MeshComponent() noexcept override {
             SetState( State::Destroyed );
         }
+
         /**
          * @brief Initialize the component.
          */
@@ -166,8 +159,6 @@ namespace PeanutGL {
          */
         auto SetVertices( const std::span< const vertices_type > new_vertices ) noexcept -> void {
             vertices.assign( new_vertices.begin(), new_vertices.end() );
-
-            if ( vbo ) { vbo->write( { vertices } ); }
         }
 
         /**
@@ -176,8 +167,6 @@ namespace PeanutGL {
          */
         auto SetVertices( const std::initializer_list< vertices_type > new_vertices ) noexcept -> void {
             vertices = new_vertices;
-
-            if ( vbo ) { vbo->write( { vertices } ); }
         }
 
         /**
@@ -194,8 +183,6 @@ namespace PeanutGL {
          */
         auto SetIndices( const std::initializer_list< indices_type > new_indices ) noexcept -> void {
             indices = new_indices;
-
-            if ( ebo ) { ebo->write( { indices } ); }
         }
 
         /**
@@ -204,8 +191,6 @@ namespace PeanutGL {
          */
         auto SetIndices( const std::span< indices_type > new_indices ) noexcept -> void {
             indices.assign( new_indices.begin(), new_indices.end() );
-
-            if ( ebo ) { ebo->write( { indices } ); }
         }
 
         /**
@@ -216,4 +201,23 @@ namespace PeanutGL {
             return { indices };
         }
     };
+
+    template < typename VerticesType, typename IndicesType >
+    auto MeshComponent< VerticesType, IndicesType >::Initialize() noexcept -> void {
+        if ( not_equal( layout.size(), 0 ) ) { SetState(); }
+    }
+
+    template < typename VerticesType, typename IndicesType >
+    auto MeshComponent< VerticesType, IndicesType >::Update( [[maybe_unused]] std::chrono::milliseconds deltaTime )
+        -> void {
+        // Entity* owner{ GetOwner() };
+        // TransformComponent* transform{ owner->GetComponent< TransformComponent >() };
+        //
+        // if ( transform != nullptr ) { transform->Update( deltaTime ); }
+    }
+
+    template < typename VerticesType, typename IndicesType >
+    auto MeshComponent< VerticesType, IndicesType >::Render() const noexcept -> void {
+    }
+
 } // namespace PeanutGL

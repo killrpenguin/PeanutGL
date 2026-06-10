@@ -55,7 +55,6 @@ namespace PeanutGL {
 
         /**
          * @brief Initialize the renderer.
-         * @param resourceManager A pointer to the resource manager.
          * @return True if initialization was successful, false otherwise.
          */
         auto Initialize() -> bool;
@@ -115,7 +114,5 @@ namespace PeanutGL {
 
         // Framebuffer resized flag (atomic to handle platform callback vs. render thread)
         std::atomic< bool > framebufferResized{ false };
-
-        //        Shader current_shader{};
     };
 } // namespace PeanutGL

@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-#include "MeshComponent.hpp"
-
-#include <glad/gl.h>
+#include "BufferObjectResource.hpp"
 
 namespace PeanutGL {
 
-    template class MeshComponent< float, unsigned int >;
+    template < typename VertexType > class Buffer< VertexType, detail::PersistentVBO >;
+    template < FourThirtyLayoutReq VertexType > class Buffer< VertexType, detail::ShaderBufferOBJ >;
+
 } // namespace PeanutGL

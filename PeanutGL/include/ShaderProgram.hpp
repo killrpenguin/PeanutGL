@@ -57,7 +57,7 @@ namespace PeanutGL {
         explicit ShaderProgram(
             std::string_view identifier, const VertShader& vert_shader, const FragShader& frag_shader ) noexcept
             : Resource( identifier ), program_handle{ link_shaders( vert_shader(), frag_shader() ) } {
-            loaded = !compile_error( program_handle, "PROGRAM" );
+            loaded = !compile_error( program_handle, detail::Link );
         }
 
         ShaderProgram( const ShaderProgram& )                = delete;

@@ -18,21 +18,23 @@
 
 #pragma once
 
-#include "DebugSystem.hpp"
 #include "ResourceManager.hpp"
 #include "Utilities.hpp"
+
 #include <cstddef>
 
 #include <glad/gl.h>
 #include <quill/LogMacros.h>
 
 namespace PeanutGL {
+    template < typename T >
+    concept OldReq = requires( T data ) { sizeof( data ) % 16 == 0; };
+
     /**
-     * @brief Class for representing a persistent coherent OpenGL buffer object.
+     * @brief Class for representing a shader buffer Object or "SSBO".
      *
-     * This class owns the buffer memory of an OpenGL buffer object.
      */
-    template < typename T > class BufferResource final : public Resource {
+    template < OldReq T > class ShaderBufferResource final : public Resource {
       public:
         using BufferType    = T;
         using BufferTypePtr = T*;
@@ -41,63 +43,76 @@ namespace PeanutGL {
         constexpr static std::size_t BUFFERSIZE{ 1024 * sizeof( BufferType ) };
 
         BufferTypePtr begin_ptr{ nullptr };
-        BufferTypePtr end_ptr{};
+        BufferTypePtr end_ptr{ nullptr };
 
         unsigned int handle{ 0 };
+        unsigned int binding_index{ 0 };
+        unsigned int empty_vao{ 0 };
         std::size_t offset{ 0 };
 
         constexpr auto static CreateBuffer( unsigned int& handle ) noexcept -> BufferTypePtr;
 
       public:
-        BufferResource() noexcept = default;
+        ShaderBufferResource() noexcept = default;
 
         // Delete the copy constructor and copy assignment operator. Resources are stored as unique pointers in
         // the resource manager.
-        BufferResource( const BufferResource& )                = delete;
-        BufferResource( BufferResource&& ) noexcept            = default;
-        BufferResource& operator=( const BufferResource& )     = delete;
-        BufferResource& operator=( BufferResource&& ) noexcept = default;
+        ShaderBufferResource( const ShaderBufferResource& )                = delete;
+        ShaderBufferResource( ShaderBufferResource&& ) noexcept            = default;
+        ShaderBufferResource& operator=( const ShaderBufferResource& )     = delete;
+        ShaderBufferResource& operator=( ShaderBufferResource&& ) noexcept = default;
 
-        explicit BufferResource( const std::string& identifier ) noexcept
-            : Resource( identifier ) {
+        explicit ShaderBufferResource( const std::string& identifier, const unsigned int binding = 0 ) noexcept
+            : Resource( identifier ), binding_index{ binding } {
             Load();
         }
 
-        ~BufferResource() override {
+        ~ShaderBufferResource() override {
             Unload();
+            begin_ptr = nullptr;
+            end_ptr   = nullptr;
         }
 
         auto Unload() noexcept -> void override {
             glUnmapNamedBuffer( handle );
             glDeleteBuffers( 1, &handle );
+            glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, 0 );
             loaded = false;
         }
 
         auto Load() noexcept -> bool override {
+            glCreateVertexArrays( 1, &empty_vao );
+
             begin_ptr = CreateBuffer( handle );
 
-            if ( loaded = not_equal( begin_ptr, nullptr ); loaded ) { end_ptr = begin_ptr + BUFFERSIZE; }
+            if ( loaded = not_equal( begin_ptr, nullptr ); loaded ) {
+                end_ptr = std::ranges::next( begin_ptr, BUFFERSIZE );
+            }
 
-            assert( not_equal( end_ptr, nullptr ) && "end_ptr is null in BufferResource object." );
+            assert( not_equal( end_ptr, nullptr ) && "end_ptr is null in ShaderBufferResource object." );
 
             return loaded;
+        }
+
+        auto Write( const std::span< const BufferType > data ) noexcept -> void {
+            if ( BufferTypePtr current_pos = begin_ptr + offset; not_equal( current_pos, end_ptr ) ) {
+                std::memcpy( current_pos, data.data(), data.size_bytes() );
+
+                offset += data.size_bytes();
+
+                glBindBufferBase( GL_SHADER_STORAGE_BUFFER, binding_index, handle );
+            } else {
+                LOG_CRITICAL( QuillPtr(), "OpenGL {} Buffer is out of memory.", Resource::GetId() );
+            }
         }
 
         auto Name() const noexcept -> unsigned int {
             return handle;
         }
-
-        auto write( const std::span< const BufferType > data ) noexcept -> void {
-            if ( BufferTypePtr current_pos = begin_ptr + offset; not_equal( current_pos, end_ptr ) ) {
-                std::memcpy( current_pos, data.data(), data.size_bytes() );
-                offset += data.size_bytes();
-            } else {
-                LOG_CRITICAL( QuillPtr(), "OpenGL {} Buffer is out of memory.", Resource::GetId() );
-            }
-        }
     };
-    template < typename T >
-    constexpr auto BufferResource< T >::CreateBuffer( unsigned int& handle ) noexcept -> BufferTypePtr {
+
+    template < OldReq T >
+    constexpr auto ShaderBufferResource< T >::CreateBuffer( unsigned int& handle ) noexcept -> BufferTypePtr {
         constexpr int access_flags{ GL_MAP_WRITE_BIT | GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT };
 
         constexpr int storage_flags{ GL_DYNAMIC_STORAGE_BIT | access_flags };
@@ -108,8 +123,5 @@ namespace PeanutGL {
 
         return static_cast< BufferTypePtr >( glMapNamedBufferRange( handle, 0, BUFFERSIZE, access_flags ) );
     }
-
-    using ElementBuffer = BufferResource< unsigned int >;
-    using VertexBuffer  = BufferResource< float >;
 
 } // namespace PeanutGL

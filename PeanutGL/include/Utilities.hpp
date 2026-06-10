@@ -1,15 +1,12 @@
 #pragma once
 
 #include "DebugSystem.hpp"
-
+#include "UtilityTypes.hpp"
 #include "quill/LogMacros.h"
 
-#include <compare>
-#include <concepts>
 #include <cstdlib>
 #include <fstream>
 #include <functional>
-#include <limits>
 #include <type_traits>
 
 namespace PeanutGL {
@@ -36,375 +33,6 @@ namespace PeanutGL {
         }
     };
 
-    template < typename T >
-    concept StrictCompareToInt = requires( int MyVal, T other ) {
-        { MyVal <=> other } -> std::same_as< std::strong_ordering >;
-    };
-
-    template < typename T >
-    concept StrictCompareToFloat = requires( int MyVal, T other ) {
-        { MyVal <=> other } -> std::same_as< std::partial_ordering >;
-    };
-
-    template < typename T >
-    concept SafeFloat = requires( float MyVal, T other ) {
-        std::convertible_to< T, float > && std::numeric_limits< T >::is_iec559;
-        { float{ other } }; // Fails on narrowing convertions.
-    };
-
-    template < typename T >
-    concept PartiallyOrdered = requires( T lhs, T rhs ) {
-        { lhs <=> rhs } -> std::convertible_to< std::partial_ordering >;
-    };
-
-    struct Width {
-        int val{ 0 };
-
-        template < typename T >
-            requires std::same_as< T, int >
-        explicit constexpr Width( T inner ) noexcept
-            : val{ inner } {};
-
-        template < StrictCompareToInt T > auto operator<=>( const T& other ) const {
-            return val <=> other;
-        }
-
-        template < typename Self > auto operator()( this Self&& self ) {
-            return std::forward< Self >( self ).val;
-        }
-    };
-
-    struct Height {
-        int val{ 0 };
-
-        template < typename T >
-            requires std::same_as< T, int >
-        explicit constexpr Height( T inner ) noexcept
-            : val{ inner } {};
-
-        template < StrictCompareToInt T > auto operator<=>( const T& other ) const {
-            return val <=> other;
-        }
-
-        template < typename Self > auto operator()( this Self&& self ) {
-            return std::forward< Self >( self ).val;
-        }
-    };
-
-    struct XAxis {
-        double val{ 0.0 };
-
-        template < typename T >
-            requires std::same_as< T, double >
-        explicit constexpr XAxis( T inner )
-            : val{ inner } {};
-
-        // Partial_ordering: == and != are not defined.
-        template < StrictCompareToFloat T > auto operator<=>( const T& other ) const {
-            val <=> other;
-        }
-        template < typename Self > auto operator()( this Self&& self ) {
-            return std::forward< Self >( self ).val;
-        }
-
-        friend auto operator<<( std::ostream& _os, const XAxis& self ) -> std::ostream& {
-            _os << self.val;
-            return _os;
-        }
-    };
-
-    struct YAxis {
-        double val{ 0.0 };
-
-        template < typename T >
-            requires std::same_as< T, double >
-        explicit constexpr YAxis( T inner )
-            : val{ inner } {};
-
-        // Partial_ordering: == and != are not defined by the space ship operator because of floating point precision
-        auto operator<=>( const YAxis& other ) const -> std::partial_ordering = default;
-
-        template < typename Self > auto operator()( this Self&& self ) {
-            return std::forward< Self >( self ).val;
-        }
-
-        friend auto operator<<( std::ostream& _os, const YAxis& self ) -> std::ostream& {
-            _os << self.val;
-            return _os;
-        }
-    };
-
-    struct CameraAspectRatio {
-        constexpr static float DefaultValue{ 16.0F / 9.0F };
-
-        CameraAspectRatio() noexcept = default;
-
-        template < SafeFloat T >
-        explicit constexpr CameraAspectRatio( const T val ) noexcept
-            : val{ val } {};
-
-        explicit operator double() const {
-            return static_cast< double >( val );
-        };
-
-        explicit operator float() const {
-            return val;
-        };
-
-        auto operator<=>( const CameraAspectRatio& other ) const -> std::partial_ordering = default;
-
-        template < PartiallyOrdered T > auto operator<=>( T rhs ) const -> std::partial_ordering {
-            return val <=> rhs;
-        }
-
-        template < SafeFloat T > auto& operator=( T rhs ) {
-            this->val = std::forward< T >( rhs );
-            return *this;
-        }
-
-        template < typename Self > auto operator()( this Self&& self ) {
-            return std::forward< Self >( self ).val;
-        }
-
-      private:
-        float val{ DefaultValue };
-    };
-
-    struct FieldOfView {
-        constexpr static float DefaultValue{ 45.0F };
-
-        FieldOfView() noexcept = default;
-
-        template < SafeFloat T >
-        explicit constexpr FieldOfView( const T val ) noexcept
-            : val{ val } {};
-
-        explicit operator double() const {
-            return static_cast< double >( val );
-        };
-
-        explicit operator float() const {
-            return val;
-        };
-
-        auto operator<=>( const FieldOfView& other ) const -> std::partial_ordering = default;
-
-        template < PartiallyOrdered T > auto operator<=>( T rhs ) const -> std::partial_ordering {
-            return val <=> rhs;
-        }
-
-        template < SafeFloat T > auto& operator=( T rhs ) {
-            this->val = std::forward< T >( rhs );
-            return *this;
-        }
-
-        template < typename Self > auto operator()( this Self&& self ) {
-            return std::forward< Self >( self ).val;
-        }
-
-      private:
-        float val{ DefaultValue };
-    };
-
-    struct Zoom {
-        constexpr static float DefaultValue{ 45.0F };
-
-        Zoom() noexcept = default;
-
-        template < SafeFloat T >
-        explicit constexpr Zoom( const T val ) noexcept
-            : val{ val } {};
-
-        explicit operator double() const {
-            return static_cast< double >( val );
-        };
-
-        explicit operator float() const {
-            return val;
-        };
-
-        auto operator<=>( const Zoom& other ) const -> std::partial_ordering = default;
-
-        template < PartiallyOrdered T > auto operator<=>( T rhs ) const -> std::partial_ordering {
-            return val <=> rhs;
-        }
-
-        template < SafeFloat T > auto& operator=( T rhs ) {
-            this->val = std::forward< T >( rhs );
-            return *this;
-        }
-
-        template < typename Self > auto operator()( this Self&& self ) {
-            return std::forward< Self >( self ).val;
-        }
-
-      private:
-        float val{ DefaultValue };
-    };
-
-    struct MouseSensitivity {
-        constexpr static float DefaultValue{ 0.1F };
-
-        MouseSensitivity() noexcept = default;
-
-        template < SafeFloat T >
-        explicit constexpr MouseSensitivity( const T val ) noexcept
-            : val{ val } {};
-
-        explicit operator double() const {
-            return static_cast< double >( val );
-        };
-
-        explicit operator float() const {
-            return val;
-        };
-
-        auto operator<=>( const MouseSensitivity& other ) const -> std::partial_ordering = default;
-
-        template < PartiallyOrdered T > auto operator<=>( T rhs ) const -> std::partial_ordering {
-            return val <=> rhs;
-        }
-
-        template < SafeFloat T > auto& operator=( T rhs ) {
-            this->val = std::forward< T >( rhs );
-            return *this;
-        }
-
-        template < typename Self > auto operator()( this Self&& self ) {
-            return std::forward< Self >( self ).val;
-        }
-
-      private:
-        float val{ DefaultValue };
-    };
-
-    struct MovementSpeed {
-        constexpr static float DefaultValue{ 2.5F };
-
-        MovementSpeed() noexcept = default;
-
-        template < SafeFloat T >
-        explicit constexpr MovementSpeed( const T val ) noexcept
-            : val{ val } {};
-
-        explicit operator double() const {
-            return static_cast< double >( val );
-        };
-
-        explicit operator float() const {
-            return val;
-        };
-
-        auto operator<=>( const MovementSpeed& other ) const -> std::partial_ordering = default;
-
-        template < PartiallyOrdered T > auto operator<=>( T rhs ) const -> std::partial_ordering {
-            return val <=> rhs;
-        }
-
-        template < SafeFloat T > auto& operator=( T rhs ) {
-            this->val = std::forward< T >( rhs );
-            return *this;
-        }
-
-        template < typename Self > auto operator()( this Self&& self ) {
-            return std::forward< Self >( self ).val;
-        }
-
-      private:
-        float val{ DefaultValue };
-    };
-
-    struct Yaw {
-        constexpr static float DefaultValue{ -90.0F };
-
-        Yaw() noexcept = default;
-
-        template < SafeFloat T >
-        explicit constexpr Yaw( const T val ) noexcept
-            : val{ val } {};
-
-        explicit operator double() const {
-            return static_cast< double >( val );
-        };
-
-        explicit operator float() const {
-            return val;
-        };
-
-        auto operator<=>( const Yaw& other ) const -> std::partial_ordering = default;
-
-        template < PartiallyOrdered T > auto operator<=>( T rhs ) const -> std::partial_ordering {
-            return val <=> rhs;
-        }
-
-        template < SafeFloat T > auto& operator=( T rhs ) {
-            this->val = std::forward< T >( rhs );
-            return *this;
-        }
-
-        template < typename Self > auto operator()( this Self&& self ) {
-            return std::forward< Self >( self ).val;
-        }
-
-      private:
-        float val{ DefaultValue };
-    };
-
-    struct Pitch {
-        constexpr static float DefaultValue{ 0.0F };
-
-        Pitch() noexcept = default;
-
-        template < SafeFloat T >
-        explicit constexpr Pitch( const T val ) noexcept
-            : val{ val } {};
-
-        explicit operator double() const {
-            return static_cast< double >( val );
-        };
-
-        explicit operator float() const {
-            return val;
-        };
-
-        auto operator<=>( const Pitch& other ) const -> std::partial_ordering = default;
-
-        template < StrictCompareToFloat T > auto operator<=>( const T& other ) const -> std::partial_ordering {
-            return val <=> other;
-        }
-
-        template < SafeFloat T > auto& operator=( T other ) {
-            this->val = other;
-            return *this;
-        }
-
-        template < typename Self > auto operator()( this Self&& self ) {
-            return std::forward< Self >( self ).val;
-        }
-
-      private:
-        float val{ DefaultValue };
-    };
-
-    struct VertexBufferElement {
-        unsigned int type{}; // GLenum type.
-        int count{};
-        unsigned char normalized{};
-
-        template < typename T > constexpr auto static _size_of() -> unsigned int {
-            return static_cast< unsigned int >( sizeof( T ) );
-        };
-
-        auto static size_of_enum_type( const unsigned int type ) -> int {
-            switch ( type ) {
-                case GL_FLOAT        : return _size_of< GLfloat >(); // OpenGL spec gaurantees 4.
-                case GL_UNSIGNED_INT : return _size_of< GLuint >();  // OpenGL spec gaurantees 4.
-                case GL_UNSIGNED_BYTE: return _size_of< GLbyte >();  // OpenGL spec gaurantees 1.
-                default              : assert( false && "Could not get size of type for VertexBufferLayout." );
-            }
-        }
-    };
-
     template < std::uint32_t... Flags > constexpr auto safe_or_assign( const int lhs ) -> int {
         auto unsigned_lhs = static_cast< uint32_t >( lhs );
         const std::uint32_t rhs{ ( Flags | ... ) };
@@ -427,48 +55,67 @@ namespace PeanutGL {
         return shader_source;
     }
 
-    constexpr auto compile_error( const unsigned int shader, const std::string_view type ) noexcept -> bool {
+    namespace detail {
+        struct Program {};
+        struct Linker {};
+
+        using ErrorType = std::variant< Program, Linker >;
+
+        constexpr ErrorType Link    = Linker();
+        constexpr ErrorType Default = Program();
+        // namespace detail
+
+        struct ErrorTypeVisitor {
+            unsigned int shader{};
+            int success{};
+
+            auto operator()( const detail::Program /*unnamed*/ ) noexcept -> bool {
+                assert( shader != 0 && "Tried to check errors for invalid shader." );
+                glGetShaderiv( shader, GL_COMPILE_STATUS, &success );
+
+                if ( success == 0 ) {
+                    constexpr static int LOGSIZE{ 1024 };
+
+                    std::string info_log{};
+
+                    glGetShaderInfoLog( shader, LOGSIZE, nullptr, info_log.data() );
+
+                    LOG_ERROR( QuillPtr(), "Shader compilation failed.\n\t{}", info_log );
+
+                    return true;
+                }
+                return false;
+            }
+            auto operator()( const detail::Linker /*unnamed*/ ) noexcept -> bool {
+                assert( shader != 0 && "Tried to check errors for invalid shader." );
+                glGetProgramiv( shader, GL_LINK_STATUS, &success );
+                if ( success == 0 ) {
+                    constexpr static int LOGSIZE{ 1024 };
+
+                    std::string info_log{};
+
+                    glGetProgramInfoLog( shader, LOGSIZE, nullptr, info_log.data() );
+                    LOG_ERROR( QuillPtr(), "Shader linking failed.\n\t", info_log );
+
+                    return true;
+                }
+                return false;
+            }
+        };
+    } // namespace detail
+
+    constexpr auto compile_error( const unsigned int shader, const detail::ErrorType type = detail::Default ) noexcept
+        -> bool {
         int success{};
-
-        if ( type != "PROGRAM" ) {
-            glGetShaderiv( shader, GL_COMPILE_STATUS, &success );
-
-            if ( success == 0 ) {
-                constexpr static int LOGSIZE{ 1024 };
-
-                std::string info_log{};
-
-                glGetShaderInfoLog( shader, LOGSIZE, nullptr, info_log.data() );
-
-                LOG_ERROR( QuillPtr(), "Shader compilation failed.\n\t{}", info_log );
-
-                return true;
-            }
-            return false;
-        } else {
-            glGetProgramiv( shader, GL_LINK_STATUS, &success );
-            if ( success == 0 ) {
-                constexpr static int LOGSIZE{ 1024 };
-
-                std::string info_log{};
-
-                glGetProgramInfoLog( shader, LOGSIZE, nullptr, info_log.data() );
-                LOG_ERROR( QuillPtr(), "Shader linking failed.\n\t", info_log );
-
-                return true;
-            }
-            return false;
-        }
+        return std::visit( detail::ErrorTypeVisitor{ .shader = shader, .success = success }, type );
     }
 
-    constexpr auto link_shaders(
-        // NOLINTNEXTLINE
-        const unsigned int VertexShader, const unsigned int FragmentShader ) noexcept -> unsigned int {
+    template < typename... Args >
+        requires( std::same_as< Args, unsigned int > || ... )
+    constexpr auto link_shaders( Args... args ) noexcept -> unsigned int {
         unsigned int new_shader_program = glCreateProgram();
 
-        glAttachShader( new_shader_program, VertexShader );
-
-        glAttachShader( new_shader_program, FragmentShader );
+        ( glAttachShader( new_shader_program, std::forward< Args >( args ) ), ... );
 
         glLinkProgram( new_shader_program );
 
@@ -485,62 +132,5 @@ namespace PeanutGL {
 
         return shader;
     }
-
-    enum class State : std::uint8_t {
-        Uninitialized,
-        Initialized,
-        Active,
-        InActive,
-        Destroyed
-    };
-
-    // clang-format off
-    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-	constexpr static std::array< float, 180 > CubeVerticies{
-			 -0.5F, -0.5F, -0.5F,  0.0F, 0.0F,
-     0.5F, -0.5F, -0.5F,  1.0F, 0.0F,
-     0.5F,  0.5F, -0.5F,  1.0F, 1.0F,
-     0.5F,  0.5F, -0.5F,  1.0F, 1.0F,
-    -0.5F,  0.5F, -0.5F,  0.0F, 1.0F,
-    -0.5F, -0.5F, -0.5F,  0.0F, 0.0F,
-
-    -0.5F, -0.5F,  0.5F,  0.0F, 0.0F,
-     0.5F, -0.5F,  0.5F,  1.0F, 0.0F,
-     0.5F,  0.5F,  0.5F,  1.0F, 1.0F,
-     0.5F,  0.5F,  0.5F,  1.0F, 1.0F,
-    -0.5F,  0.5F,  0.5F,  0.0F, 1.0F,
-    -0.5F, -0.5F,  0.5F,  0.0F, 0.0F,
-
-    -0.5F,  0.5F,  0.5F,  1.0F, 0.0F,
-    -0.5F,  0.5F, -0.5F,  1.0F, 1.0F,
-    -0.5F, -0.5F, -0.5F,  0.0F, 1.0F,
-    -0.5F, -0.5F, -0.5F,  0.0F, 1.0F,
-    -0.5F, -0.5F,  0.5F,  0.0F, 0.0F,
-    -0.5F,  0.5F,  0.5F,  1.0F, 0.0F,
-
-     0.5F,  0.5F,  0.5F,  1.0F, 0.0F,
-     0.5F,  0.5F, -0.5F,  1.0F, 1.0F,
-     0.5F, -0.5F, -0.5F,  0.0F, 1.0F,
-     0.5F, -0.5F, -0.5F,  0.0F, 1.0F,
-     0.5F, -0.5F,  0.5F,  0.0F, 0.0F,
-     0.5F,  0.5F,  0.5F,  1.0F, 0.0F,
-
-    -0.5F, -0.5F, -0.5F,  0.0F, 1.0F,
-     0.5F, -0.5F, -0.5F,  1.0F, 1.0F,
-     0.5F, -0.5F,  0.5F,  1.0F, 0.0F,
-     0.5F, -0.5F,  0.5F,  1.0F, 0.0F,
-    -0.5F, -0.5F,  0.5F,  0.0F, 0.0F,
-    -0.5F, -0.5F, -0.5F,  0.0F, 1.0F,
-
-    -0.5F,  0.5F, -0.5F,  0.0F, 1.0F,
-     0.5F,  0.5F, -0.5F,  1.0F, 1.0F,
-     0.5F,  0.5F,  0.5F,  1.0F, 0.0F,
-     0.5F,  0.5F,  0.5F,  1.0F, 0.0F,
-    -0.5F,  0.5F,  0.5F,  0.0F, 0.0F,
-    -0.5F,  0.5F, -0.5F,  0.0F, 1.0F
-		   };
-  
-    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-    // clang-format on
 
 } // namespace PeanutGL

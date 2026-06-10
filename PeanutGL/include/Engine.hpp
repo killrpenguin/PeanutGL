@@ -76,6 +76,18 @@ namespace PeanutGL {
         auto Cleanup() noexcept -> void;
 
         /**
+         * @brief Set the active camera.
+         * @param cameraComponent The camera component to set as active.
+         */
+        auto SetActiveCamera( CameraComponent* cameraComponent ) noexcept -> void;
+
+        /**
+         * @brief Get the active camera.
+         * @return A pointer to the active camera component, or nullptr if none is set.
+         */
+        auto GetActiveCamera() const -> const CameraComponent*;
+
+        /**
          * @brief Unload a resource.
          * @tparam T The type of resource.
          * @param identifier The resource ID.
@@ -228,6 +240,25 @@ namespace PeanutGL {
         // deltaTimeMs: time since last frame in milliseconds (for clarity)
         chrono::milliseconds deltaTimeMs{ 0 };
         std::uint64_t lastFrameTimeMs{ 0 };
+
+        // Camera control state
+        struct CameraControlState {
+            bool moveForward       = false;
+            bool moveBackward      = false;
+            bool moveLeft          = false;
+            bool moveRight         = false;
+            bool moveUp            = false;
+            bool moveDown          = false;
+            bool mouseLeftPressed  = false;
+            bool mouseRightPressed = false;
+            float lastMouseX       = 0.0;
+            float lastMouseY       = 0.0;
+            float yaw              = Yaw::DefaultValue;
+            float pitch            = Pitch::DefaultValue;
+            bool firstMouse        = true;
+            float cameraSpeed      = MovementSpeed::DefaultValue;
+            float mouseSensitivity = MouseSensitivity::DefaultValue;
+        } cameraControl{};
 
         // Frame counter and FPS calculation
         std::uint64_t frameCount{ 0 };

@@ -38,9 +38,8 @@ namespace PeanutGL {
 
             engine.Run();
 
-            // CrashReporter::GetInstance().Cleanup();
-
             return 0;
+
         } catch ( const FatalSignalError& err ) {
             LOG_CRITICAL( QuillPtr(), "Fatal signal from system: {}", err.what() );
             return err();

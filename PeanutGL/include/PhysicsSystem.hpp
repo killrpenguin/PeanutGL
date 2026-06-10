@@ -142,7 +142,7 @@ namespace PeanutGL {
         Renderer* renderer             = nullptr;
 
         // Camera position for geometry-relative ball checking
-        glm::vec3 cameraPosition = glm::vec3( 0.0F, 0.0F, 0.0F );
+        glm::vec3 cameraPosition{};
     };
 
 } // namespace PeanutGL

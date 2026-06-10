@@ -19,6 +19,8 @@
 #pragma once
 
 #include "Component.hpp"
+#include "DebugSystem.hpp"
+#include "ShaderProgram.hpp"
 #include "Utilities.hpp"
 
 #include <GLFW/glfw3.h>
@@ -26,6 +28,7 @@
 #include <glm/ext/vector_float3.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <quill/LogMacros.h>
 
 namespace PeanutGL {
     enum class CameraMovement : std::uint8_t {
@@ -46,6 +49,8 @@ namespace PeanutGL {
         constexpr static float DefaultAspectRatio{};
 
       private:
+        ResourceHandle< ShaderProgram > shader_program{};
+
         glm::vec3 position{ 0.0F, 0.0F, 0.0F };
         glm::vec3 front{ 0.0F, 0.0F, -1.0F };
         glm::vec3 up{ 0.0F, 1.0F, 0.0F };
@@ -65,21 +70,6 @@ namespace PeanutGL {
         FieldOfView field_of_view{};
         CameraAspectRatio aspect_ratio{};
 
-        std::chrono::milliseconds delta_time{};
-        std::chrono::milliseconds last_frame{};
-
-        auto UpdateCameraVectors() noexcept -> void {
-            const float frontX{ glm::cos( glm::radians( yaw() ) ) * glm::cos( glm::radians( pitch() ) ) };
-            const float frontY{ glm::sin( glm::radians( pitch() ) ) };
-            const float frontZ{ glm::sin( glm::radians( yaw() ) ) * glm::cos( glm::radians( pitch() ) ) };
-
-            front = glm::normalize( glm::vec3( frontX, frontY, frontZ ) );
-
-            right = glm::normalize( glm::cross( front, world_up ) );
-
-            up = glm::normalize( glm::cross( right, front ) );
-        }
-
         constexpr auto static GetTime() noexcept -> std::chrono::milliseconds {
             const std::chrono::duration< double > seconds{ glfwGetTime() };
             return std::chrono::duration_cast< std::chrono::milliseconds >( seconds );
@@ -92,8 +82,9 @@ namespace PeanutGL {
          * @brief Constructor with an optional name.
          * @param componentName The name of the component.
          */
-        explicit CameraComponent( const std::string& componentName = "Camera" )
-            : Component( componentName ) {
+        explicit CameraComponent(
+            const ResourceHandle< ShaderProgram >& handle, const std::string& componentName = "view" )
+            : Component{ componentName }, shader_program{ handle } {
             Initialize();
             UpdateCameraVectors();
         };
@@ -116,11 +107,6 @@ namespace PeanutGL {
          * @param deltaTime The time elapsed since the last frame.
          */
         auto Update( [[maybe_unused]] const std::chrono::milliseconds deltaTime ) -> void override;
-        // {
-        // const std::chrono::milliseconds current_frame{ GetTime() };
-        // delta_time = current_frame - last_frame;
-        // last_frame = current_frame;
-        //        }
 
         /**
          * @brief Render the component.
@@ -136,6 +122,18 @@ namespace PeanutGL {
         }
 
         /**
+         * @brief Set the aspect ratio for perspective projection.
+         * @param ratio The aspect ratio (width / height).
+         */
+        auto SetYaw( const float val ) noexcept -> void {
+            yaw = val;
+        }
+
+        auto SetPitch( const float val ) noexcept -> void {
+            pitch = val;
+        }
+
+        /**
          * @brief Get the view matrix calculated using Euler Angles.
          */
         auto GetViewMatrix() const noexcept -> glm::mat4 {
@@ -143,27 +141,22 @@ namespace PeanutGL {
         }
 
         /**
-         * @brief Get the camera position.
-         * @return The camera position.
+         * @brief Apply direction based movememnt to camera data.
+         * @param direction The direction to move as a CameraMovement enum).
+         * @param velocity The velocity of the movement.
          */
-        auto GetPosition() const noexcept -> glm::vec3 {
-            return position;
-        }
+        auto UpdateMovement( const CameraMovement direction, const float velocity ) noexcept -> void;
 
-        /**
-         * @brief Get the camera front value.
-         * @return The camera position.
-         */
-        auto GetFront() const noexcept -> glm::vec3 {
-            return front;
-        }
+        auto UpdateCameraVectors() noexcept -> void {
+            const float frontX{ glm::cos( glm::radians( yaw() ) ) * glm::cos( glm::radians( pitch() ) ) };
+            const float frontY{ glm::sin( glm::radians( pitch() ) ) };
+            const float frontZ{ glm::sin( glm::radians( yaw() ) ) * glm::cos( glm::radians( pitch() ) ) };
 
-        /**
-         * @brief Get the camera front value.
-         * @return The camera position.
-         */
-        auto GetZoom() const noexcept -> float {
-            return zoom();
+            front = glm::normalize( glm::vec3( frontX, frontY, frontZ ) );
+
+            right = glm::normalize( glm::cross( front, world_up ) );
+
+            up = glm::normalize( glm::cross( right, front ) );
         }
     };
 
