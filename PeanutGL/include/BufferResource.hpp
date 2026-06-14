@@ -28,9 +28,11 @@
 
 namespace PeanutGL {
 
+
+  
     namespace detail {
         struct PersistentVBO {};
-        struct ShaderBufferOBJ {};
+        struct ShaderBufferObject {};
     }; // namespace detail
 
     template < typename T, typename BufferType > class Buffer final : public Resource {
@@ -72,13 +74,17 @@ namespace PeanutGL {
         auto Write( const std::span< const vertex_type > data ) noexcept -> void;
     };
 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // SSBO
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     template < typename T >
     concept FourThirtyLayoutReq = requires( T data ) {
         // NOLINTNEXTLINE
         equal( sizeof( data ) % 16, 0 );
     };
 
-    template < FourThirtyLayoutReq T > class Buffer< T, detail::ShaderBufferOBJ > final : public Resource {
+    template < FourThirtyLayoutReq T > class Buffer< T, detail::ShaderBufferObject > final : public Resource {
       public:
         using vertex_type = T;
         using pointer     = vertex_type*;
@@ -98,6 +104,11 @@ namespace PeanutGL {
       public:
         Buffer() = default;
 
+        explicit Buffer( const std::string& identifier, const unsigned int binding = 0 ) noexcept
+            : Resource( identifier ), binding_index{ binding } {
+            Load();
+        }
+
         ~Buffer() noexcept override;
 
         Buffer( const Buffer& )                = delete;
@@ -116,33 +127,49 @@ namespace PeanutGL {
         auto Write( const std::span< const vertex_type > data ) noexcept -> void;
     };
 
-    template < FourThirtyLayoutReq VertexType > Buffer< VertexType, detail::ShaderBufferOBJ >::~Buffer() noexcept {
+    template < FourThirtyLayoutReq VertexType > Buffer< VertexType, detail::ShaderBufferObject >::~Buffer() noexcept {
         Unload();
         begin_ptr = nullptr;
         end_ptr   = nullptr;
     }
 
     template < FourThirtyLayoutReq VertexType >
-    auto Buffer< VertexType, detail::ShaderBufferOBJ >::Load() noexcept -> bool {
+    auto Buffer< VertexType, detail::ShaderBufferObject >::Load() noexcept -> bool {
+        begin_ptr = CreateBuffer( handle );
+
+        if ( loaded = not_equal( begin_ptr, nullptr ); loaded ) {
+            end_ptr = std::ranges::next( begin_ptr, BUFFERSIZE );
+        }
+
+        assert( not_equal( end_ptr, nullptr ) && "end_ptr is null in ShaderBufferResource object." );
+
+        return loaded;
     }
 
     template < FourThirtyLayoutReq VertexType >
-    auto Buffer< VertexType, detail::ShaderBufferOBJ >::Unload() noexcept -> void {
+    auto Buffer< VertexType, detail::ShaderBufferObject >::Unload() noexcept -> void {
+        glUnmapNamedBuffer( handle );
+        glDeleteBuffers( 1, &handle );
+        glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, 0 );
+        loaded = false;
     }
 
     template < FourThirtyLayoutReq VertexType >
-    auto Buffer< VertexType, detail::ShaderBufferOBJ >::Write( const std::span< const VertexType > data ) noexcept
+    auto Buffer< VertexType, detail::ShaderBufferObject >::Write( const std::span< const VertexType > data ) noexcept
         -> void {
         if ( pointer current_pos = begin_ptr + offset; not_equal( current_pos, end_ptr ) ) {
             std::memcpy( current_pos, data.data(), data.size_bytes() );
+
             offset += data.size_bytes();
+
+            glBindBufferBase( GL_SHADER_STORAGE_BUFFER, binding_index, handle );
         } else {
             LOG_CRITICAL( QuillPtr(), "OpenGL {} Buffer is out of memory.", Resource::GetId() );
         }
     }
 
     template < FourThirtyLayoutReq VertexType >
-    constexpr auto Buffer< VertexType, detail::ShaderBufferOBJ >::CreateBuffer( unsigned int& handle ) noexcept
+    constexpr auto Buffer< VertexType, detail::ShaderBufferObject >::CreateBuffer( unsigned int& handle ) noexcept
         -> pointer {
         constexpr int access_flags{ GL_MAP_WRITE_BIT | GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT };
 
@@ -155,8 +182,7 @@ namespace PeanutGL {
         return static_cast< pointer >( glMapNamedBufferRange( handle, 0, BUFFERSIZE, access_flags ) );
     }
 
-    template < FourThirtyLayoutReq T > using SSBOResource = Buffer< T, detail::ShaderBufferOBJ >;
-
+    template < typename T > using SSBOResource = Buffer< T, detail::ShaderBufferObject >;
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // PersistentVBO
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////

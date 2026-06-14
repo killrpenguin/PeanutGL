@@ -21,6 +21,7 @@
 #include "Entity.hpp"
 
 #include "ImGuiSystem.hpp"
+#include "ResourceManager.hpp"
 #include "Utilities.hpp"
 
 #include "glad/gl.h"
@@ -37,8 +38,12 @@ namespace PeanutGL {
     }
 
     auto Renderer::Render(
-        std::span< Entity* > entities, CameraComponent* camera, ImGuiSystem* imguiSystem ) const noexcept -> void {
-        if ( not_equal( camera, nullptr ) ) { /*placeholder*/
+        std::span< Entity* > entities, CameraComponent* camera, ImGuiSystem* imguiSystem,
+        ResourceManager* resourceManager ) const noexcept -> void {
+        if ( not_equal( camera, nullptr ) ) {          /*placeholder*/
+        }
+
+        if ( not_equal( resourceManager, nullptr ) ) { /*placeholder*/
         }
 
         constexpr float Alpha{ 1.0F };

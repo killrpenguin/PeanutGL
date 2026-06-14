@@ -8,7 +8,7 @@
 #include "ProjectionComponent.hpp"
 #include "ResourceManager.hpp"
 #include "Shader.hpp"
-#include "ShaderBufferResource.hpp"
+#include "BufferResource.hpp"
 #include "ShaderProgram.hpp"
 #include "VertexArray.hpp"
 
@@ -37,7 +37,8 @@ void PeanutGL::EngineSetup( Engine* const engine ) {
     const auto vert_shader{ engine->LoadResource< VertShader >( "BasicTextVert" ) };
     const auto frag_shader{ engine->LoadResource< FragShader >( "BasicTextFrag" ) };
 
-    const auto SSBO{ engine->LoadResource< ShaderBufferResource< CPUData > >( "ShaderStorageBuffer" ) };
+    //    const auto SSBO{ engine->LoadResource< ShaderBufferResource< CPUData > >( "ShaderStorageBuffer" ) };
+    const auto SSBO{ engine->LoadResource< SSBOResource< CPUData > >( "ShaderStorageBuffer" ) };
 
     const auto VAO{ engine->LoadResource< EmptyVAO< CPUData > >( "VAO", SSBO->Name() ) };
 

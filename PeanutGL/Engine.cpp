@@ -388,7 +388,7 @@ namespace PeanutGL {
             }
         }
 
-        renderer->Render( snapshot, activeCamera, imguiSystem.get() );
+        renderer->Render( snapshot, activeCamera, imguiSystem.get(), resourceManager.get() );
     }
 
     auto Engine::CalculateDeltaTimeMs() noexcept -> chrono::milliseconds {
@@ -533,7 +533,6 @@ namespace PeanutGL {
         cameraTransform->SetYaw( cameraControl.yaw );
 
         cameraTransform->UpdateCameraVectors();
-
     }
 
 } // namespace PeanutGL

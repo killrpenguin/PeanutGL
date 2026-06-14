@@ -1,4 +1,4 @@
-#include "BufferObjectResource.hpp"
+#include "BufferResource.hpp"
 #include "CameraComponent.hpp"
 #include "Engine.hpp"
 #include "Entity.hpp"

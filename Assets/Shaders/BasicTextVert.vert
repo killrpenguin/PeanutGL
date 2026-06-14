@@ -5,7 +5,7 @@ struct VertexData {
     float tex[2];	
 };
 
-layout(binding = 0, std430) buffer ssbo1 {
+layout(binding = 0, std430) readonly buffer ssbo1 {
     VertexData data[];
 };
 

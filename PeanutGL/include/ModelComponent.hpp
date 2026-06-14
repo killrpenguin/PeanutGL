@@ -10,11 +10,20 @@
 #include <quill/LogMacros.h>
 
 namespace PeanutGL {
+    namespace detail {
+        struct Model {};
+        struct TutModel {}; // Specifically for LearnOpenGL.
+    }; // namespace detail
+
     /**
      * @brief Model component.
      *
-     * This class implements the component interface.
+     * A model component is used to transform an object's vertices from its local Model Space
+     * into World Space. Its specific position, rotation, and scale
+     * within the overall game or application scene.
+     *
      */
+
     class ModelComponent final : public Component {
       private:
         ResourceHandle< ShaderProgram > shader_program{};

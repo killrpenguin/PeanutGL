@@ -1,7 +1,7 @@
 set(INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(HEADER_LIST 
-	"${INCLUDE_PATH}/BufferObjectResource.hpp"
+	"${INCLUDE_PATH}/BufferResource.hpp"
 	"${INCLUDE_PATH}/UniformResource.hpp"
 	"${INCLUDE_PATH}/ResourceManager.hpp"
 	"${INCLUDE_PATH}/MemoryBarrierResource.hpp"
@@ -30,7 +30,6 @@ set(HEADER_LIST
 	"${INCLUDE_PATH}/ModelComponent.hpp"
 	"${INCLUDE_PATH}/ProjectionComponent.hpp"
 	"${INCLUDE_PATH}/ViewComponent.hpp"
-	"${INCLUDE_PATH}/ShaderBufferResource.hpp"
 )
 
 set(SRC_LIST 
@@ -51,7 +50,7 @@ set(SRC_LIST
 	"TransformComponent.cpp"
 	"MeshComponent.cpp"
 	"CameraComponent.cpp"
-	"BufferObjectResource.cpp"
+	"BufferResource.cpp"
 )
 
 set_source_files_properties(STBImage.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION TRUE)

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-#include "BufferObjectResource.hpp"
+#include "BufferResource.hpp"
 
 namespace PeanutGL {
 

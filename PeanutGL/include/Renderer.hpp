@@ -99,9 +99,11 @@ namespace PeanutGL {
          * @param entities The entities to render.
          * @param camera The camera to use for rendering.
          * @param imguiSystem The ImGui system for UI rendering (optional).
+         * @param resourceManager The resource manager for accessing OpenGL state. (optional).
          */
-        auto Render( std::span< Entity* > entities, CameraComponent* camera, ImGuiSystem* imguiSystem ) const noexcept
-            -> void;
+        auto Render(
+            std::span< Entity* > entities, CameraComponent* camera, ImGuiSystem* imguiSystem,
+            ResourceManager* /*resourceManager*/ ) const noexcept -> void;
 
       private:
         Platform* platform{ nullptr };
