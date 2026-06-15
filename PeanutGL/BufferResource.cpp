@@ -21,6 +21,6 @@
 namespace PeanutGL {
 
     template < typename VertexType > class Buffer< VertexType, detail::PersistentVBO >;
-    template < FourThirtyLayoutReq VertexType > class Buffer< VertexType, detail::ShaderBufferOBJ >;
+    template < FourThirtyLayoutReq VertexType > class Buffer< VertexType, detail::ShaderBufferObject >;
 
 } // namespace PeanutGL

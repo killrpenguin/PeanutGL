@@ -1,3 +1,4 @@
+#include "BufferResource.hpp"
 #include "CameraComponent.hpp"
 #include "Engine.hpp"
 #include "Entity.hpp"
@@ -8,12 +9,11 @@
 #include "ProjectionComponent.hpp"
 #include "ResourceManager.hpp"
 #include "Shader.hpp"
-#include "BufferResource.hpp"
 #include "ShaderProgram.hpp"
 #include "VertexArray.hpp"
+#include "ViewComponent.hpp"
 
 #include <array>
-
 #include <stdexcept>
 
 namespace {
@@ -37,7 +37,6 @@ void PeanutGL::EngineSetup( Engine* const engine ) {
     const auto vert_shader{ engine->LoadResource< VertShader >( "BasicTextVert" ) };
     const auto frag_shader{ engine->LoadResource< FragShader >( "BasicTextFrag" ) };
 
-    //    const auto SSBO{ engine->LoadResource< ShaderBufferResource< CPUData > >( "ShaderStorageBuffer" ) };
     const auto SSBO{ engine->LoadResource< SSBOResource< CPUData > >( "ShaderStorageBuffer" ) };
 
     const auto VAO{ engine->LoadResource< EmptyVAO< CPUData > >( "VAO", SSBO->Name() ) };
@@ -47,7 +46,8 @@ void PeanutGL::EngineSetup( Engine* const engine ) {
     if ( vert_shader and frag_shader and SSBO and container ) {
         Entity* const text_entity{ engine->CreateEntity( "Text" ) };
 
-        const auto shader_program{ engine->LoadResource< ShaderProgram >( "BasicText", *vert_shader, *frag_shader ) };
+        const auto shader_program{ engine->LoadResource< ShaderProgram >(
+            text_entity->GetName(), *vert_shader, *frag_shader ) };
 
         auto* const mesh{ text_entity->AddComponent< MeshComponent< CPUData, unsigned int > >() };
 
@@ -55,17 +55,14 @@ void PeanutGL::EngineSetup( Engine* const engine ) {
 
         SSBO->Write( mesh->GetVertices() );
 
-        auto* model{ text_entity->AddComponent< ModelComponent >( shader_program ) };
+        engine->SetActiveCamera( text_entity->AddComponent< CameraComponent >( "FlyingCamera" ) );
+        
+        (void)text_entity->AddComponent< ModelComponent >( "model" );
 
-        constexpr float Degrees{ 10.0F };
-        model->SetDegrees( Degrees );
-
-        auto* const active_camera{ text_entity->AddComponent< CameraComponent >( shader_program ) };
-
-        engine->SetActiveCamera( active_camera );
+        (void)text_entity->AddComponent< ViewComponent >( "view" );
 
         (void)text_entity->AddComponent< ProjectionComponent >(
-            shader_program, engine->GetPlatform()->GetWindowWidth(), engine->GetPlatform()->GetWindowHeight() );
+            "projection", engine->GetPlatform()->GetWindowWidth(), engine->GetPlatform()->GetWindowHeight() );
 
         shader_program->SetUniform( container );
 

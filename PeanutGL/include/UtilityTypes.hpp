@@ -175,6 +175,78 @@ namespace PeanutGL {
         float val{ DefaultValue };
     };
 
+    struct ZNear {
+        constexpr static float DefaultValue{ 0.1F };
+
+        ZNear() noexcept = default;
+
+        template < SafeFloat T >
+        explicit constexpr ZNear( const T val ) noexcept
+            : val{ val } {};
+
+        explicit operator double() const {
+            return static_cast< double >( val );
+        };
+
+        explicit operator float() const {
+            return val;
+        };
+
+        auto operator<=>( const ZNear& other ) const -> std::partial_ordering = default;
+
+        template < PartiallyOrdered T > auto operator<=>( T rhs ) const -> std::partial_ordering {
+            return val <=> rhs;
+        }
+
+        template < SafeFloat T > auto& operator=( T rhs ) {
+            this->val = std::forward< T >( rhs );
+            return *this;
+        }
+
+        template < typename Self > auto operator()( this Self&& self ) {
+            return std::forward< Self >( self ).val;
+        }
+
+      private:
+        float val{ DefaultValue };
+    };
+
+    struct Degrees {
+        constexpr static float DefaultValue{ 45.0F };
+
+        Degrees() noexcept = default;
+
+        template < SafeFloat T >
+        explicit constexpr Degrees( const T val ) noexcept
+            : val{ val } {};
+
+        explicit operator double() const {
+            return static_cast< double >( val );
+        };
+
+        explicit operator float() const {
+            return val;
+        };
+
+        auto operator<=>( const Degrees& other ) const -> std::partial_ordering = default;
+
+        template < PartiallyOrdered T > auto operator<=>( T rhs ) const -> std::partial_ordering {
+            return val <=> rhs;
+        }
+
+        template < SafeFloat T > auto& operator=( T rhs ) {
+            this->val = std::forward< T >( rhs );
+            return *this;
+        }
+
+        template < typename Self > auto operator()( this Self&& self ) {
+            return std::forward< Self >( self ).val;
+        }
+
+      private:
+        float val{ DefaultValue };
+    };
+
     struct Zoom {
         constexpr static float DefaultValue{ 45.0F };
 

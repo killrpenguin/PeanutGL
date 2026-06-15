@@ -3,26 +3,25 @@
 
 namespace PeanutGL {
 
-    ProjectionComponent::ProjectionComponent(
-        const ResourceHandle< ShaderProgram >& handle, const Width width, const Height height,
-        const std::string& componentName )
-        : Component( componentName ), width{ width }, height{ height }, shader_program{ handle } {
+    ProjectionComponent::ProjectionComponent( const std::string& componentName, const Width width, const Height height )
+        : Component( componentName ), width{ width }, height{ height } {
         Initialize();
     }
+
     auto ProjectionComponent::Initialize() noexcept -> void {
         SetState();
     }
-    auto ProjectionComponent::Update( [[maybe_unused]] const std::chrono::milliseconds deltaTime ) -> void {
+
+    auto ProjectionComponent::MatrixData() const noexcept -> glm::mat4 {
+        return projection;
+    }
+
+    auto ProjectionComponent::Update( const std::chrono::milliseconds /*deltaTime*/ ) -> void {
+        projection = glm::perspective(
+            glm::radians( degrees() ), static_cast< float >( width() ) / static_cast< float >( height() ), zNear(),
+            100.0F );
     }
 
     auto ProjectionComponent::Render() const noexcept -> void {
-        constexpr float DefaultDegrees{ 45.0F };
-        constexpr float zNear{ 0.1F };
-
-        glm::mat4 projection{ glm::perspective(
-            glm::radians( DefaultDegrees ), static_cast< float >( width() ) / static_cast< float >( height() ), zNear,
-            100.0F ) };
-
-        if ( shader_program ) { shader_program->SetUniform( Component::GetName(), projection ); }
     }
 } // namespace PeanutGL

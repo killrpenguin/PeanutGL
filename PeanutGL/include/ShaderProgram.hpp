@@ -102,6 +102,11 @@ namespace PeanutGL {
 
         auto constexpr populate_uniforms() noexcept -> void;
 
+        auto HasUniform( const std::string& name ) const noexcept -> bool {
+            const auto uniform = uniforms.find( name );
+            return not_equal( uniform, uniforms.end() );
+        }
+
         auto Handle() const noexcept -> unsigned int {
             return program_handle;
         }
@@ -167,8 +172,6 @@ namespace PeanutGL {
     constexpr auto ShaderProgram::SetUniform( const std::string& name, const int& value ) const noexcept -> void {
         if ( const auto uniform = uniforms.find( name ); not_equal( uniform, uniforms.end() ) ) {
             glProgramUniform1i( program_handle, uniform->second.location, value );
-        } else {
-            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
         }
     }
 
@@ -176,8 +179,6 @@ namespace PeanutGL {
     constexpr auto ShaderProgram::SetUniform( const std::string& name, const float& value ) const noexcept -> void {
         if ( const auto uniform = uniforms.find( name ); not_equal( uniform, uniforms.end() ) ) {
             glProgramUniform1f( program_handle, uniform->second.location, value );
-        } else {
-            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
         }
     }
 
@@ -186,8 +187,6 @@ namespace PeanutGL {
         const std::string& name, const glm::vec< 2, float >& value ) const noexcept -> void {
         if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
             glProgramUniform2fv( program_handle, uni->second.location, uni->second.count, &value[0] );
-        } else {
-            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
         }
     }
 
@@ -196,8 +195,6 @@ namespace PeanutGL {
         -> void {
         if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
             glProgramUniform2f( program_handle, uni->second.location, xpos, y );
-        } else {
-            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
         }
     }
 
@@ -206,8 +203,6 @@ namespace PeanutGL {
         const std::string& name, const glm::vec< 3, float >& value ) const noexcept -> void {
         if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
             glProgramUniform3fv( program_handle, uni->second.location, uni->second.count, &value[0] );
-        } else {
-            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
         }
     }
 
@@ -226,8 +221,6 @@ namespace PeanutGL {
         const std::string& name, const glm::vec< 4, float >& value ) const noexcept -> void {
         if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
             glProgramUniform4fv( program_handle, uni->second.location, uni->second.count, &value[0] );
-        } else {
-            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
         }
     }
 
@@ -237,8 +230,6 @@ namespace PeanutGL {
         -> void {
         if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
             glProgramUniform4f( program_handle, uni->second.location, xpos, ypos, zpos, wpos );
-        } else {
-            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
         }
     }
 
@@ -248,8 +239,6 @@ namespace PeanutGL {
         if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
             glProgramUniformMatrix2fv(
                 program_handle, uni->second.location, uni->second.count, GL_FALSE, glm::value_ptr( value ) );
-        } else {
-            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
         }
     }
 
@@ -259,8 +248,6 @@ namespace PeanutGL {
         if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
             glProgramUniformMatrix3fv(
                 program_handle, uni->second.location, uni->second.count, GL_FALSE, glm::value_ptr( value ) );
-        } else {
-            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
         }
     }
 
@@ -270,8 +257,6 @@ namespace PeanutGL {
         if ( const auto uni = uniforms.find( name ); not_equal( uni, uniforms.end() ) ) {
             glProgramUniformMatrix4fv(
                 program_handle, uni->second.location, uni->second.count, GL_FALSE, glm::value_ptr( value ) );
-        } else {
-            LOG_ERROR( QuillPtr(), "{} is not a registered uniform.", name );
         }
     }
 

@@ -13,16 +13,35 @@
 #include "UtilityTypes.hpp"
 #include "UtilityVerticies.hpp"
 #include "VertexArray.hpp"
+#include "ViewComponent.hpp"
 
+#include <array>
 #include <cassert>
 #include <span>
 #include <stdexcept>
 
 namespace {
+
     using VertexType   = float;
     using TriangleVBO  = PeanutGL::PersistentVBO< VertexType >;
     using TriangleVAO  = PeanutGL::BasicVAO< VertexType >;
     using TriangleMesh = PeanutGL::MeshComponent< VertexType, unsigned int >;
+
+    // clang-format off
+	  [[maybe_unused]] constexpr std::array<glm::vec3, 10> CubePositions {
+    glm::vec3( 0.0F,  0.0F,  0.0F), 
+    glm::vec3( 2.0F,  5.0F, -15.0F), 
+    glm::vec3(-1.5F, -2.2F, -2.5F),  
+    glm::vec3(-3.8F, -2.0F, -12.3F),  
+    glm::vec3( 2.4F, -0.4F, -3.5F),  
+    glm::vec3(-1.7F,  3.0F, -7.5F),  
+    glm::vec3( 1.3F, -2.0F, -2.5F),  
+    glm::vec3( 1.5F,  2.0F, -2.5F), 
+    glm::vec3( 1.5F,  0.2F, -1.5F), 
+    glm::vec3(-1.3F,  1.0F, -1.5F)  
+	  };
+    // clang-format on
+
 } // namespace
 
 void PeanutGL::EngineSetup( Engine* const engine ) {
@@ -39,7 +58,7 @@ void PeanutGL::EngineSetup( Engine* const engine ) {
         Entity* const triangle_entity{ engine->CreateEntity( "Triangle" ) };
 
         const auto shader_program{ engine->LoadResource< ShaderProgram >(
-            "TriangleShader", *vert_shader, *frag_shader ) };
+            triangle_entity->GetName(), *vert_shader, *frag_shader ) };
 
         auto* const triangle_component{ triangle_entity->AddComponent< TriangleMesh >() };
 
@@ -47,17 +66,14 @@ void PeanutGL::EngineSetup( Engine* const engine ) {
 
         VBO->Write( triangle_component->GetVertices() );
 
-        auto* model{ triangle_entity->AddComponent< ModelComponent >( shader_program ) };
+        engine->SetActiveCamera( triangle_entity->AddComponent< CameraComponent >( "FlyingCamera" ) );
 
-        constexpr float Degrees{ 10.0F };
-        model->SetDegrees( Degrees );
+        (void)triangle_entity->AddComponent< ModelComponent >( "model" );
 
-        auto* const active_camera{ triangle_entity->AddComponent< CameraComponent >( shader_program ) };
-
-        engine->SetActiveCamera( active_camera );
+        (void)triangle_entity->AddComponent< ViewComponent >( "view" );
 
         (void)triangle_entity->AddComponent< ProjectionComponent >(
-            shader_program, engine->GetPlatform()->GetWindowWidth(), engine->GetPlatform()->GetWindowHeight() );
+            "projection", engine->GetPlatform()->GetWindowWidth(), engine->GetPlatform()->GetWindowHeight() );
 
         /* Position, Texture */
         const std::span< const VertexBufferElement > vao_layout{ triangle_component->SetAttributes< float >(
@@ -71,6 +87,7 @@ void PeanutGL::EngineSetup( Engine* const engine ) {
         triangle_component->SetIndices( { 0, 1, 3, 1, 2, 3 } );
 
         triangle_entity->Initialize();
+
     } else {
         throw std::runtime_error( "Found invalid resource handle during engine setup." );
     }

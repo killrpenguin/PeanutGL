@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Component.hpp"
-#include "ShaderProgram.hpp"
+#include "UtilityTypes.hpp"
 
 #include <glad/gl.h>
 #include <glm/glm.hpp>
@@ -21,7 +21,10 @@ namespace PeanutGL {
         Width width;
         Height height;
 
-        ResourceHandle< ShaderProgram > shader_program{};
+        Degrees degrees{};
+        ZNear zNear{};
+
+        glm::mat4 projection{ 1.0F };
 
       public:
         ProjectionComponent() = delete;
@@ -32,9 +35,7 @@ namespace PeanutGL {
          * @param height The screen height.
          * @param componentName The name of the component.
          */
-        explicit ProjectionComponent(
-            const ResourceHandle< ShaderProgram >& handle, const Width width, const Height height,
-            const std::string& componentName = "projection" );
+        explicit ProjectionComponent( const std::string& componentName, const Width width, const Height height );
 
         ProjectionComponent( const ProjectionComponent& )            = delete;
         ProjectionComponent( ProjectionComponent&& )                 = delete;
@@ -59,5 +60,26 @@ namespace PeanutGL {
          * @brief Render the component.
          */
         auto Render() const noexcept -> void override;
+
+        /**
+         * @brief Get the matrix data calculated during the last update call.
+         */
+        auto MatrixData() const noexcept -> glm::mat4;
+
+        /**
+         * @brief Set the degrees. The component will convert the float to radians.
+         * @param new_degrees The new degrees to use when calculating the matrix.
+         */
+        constexpr auto SetDegrees( const float new_degrees ) noexcept -> void {
+            degrees = new_degrees;
+        }
+
+        /**
+         * @brief Set the zNear.
+         * @param new_zNear The new zNear to use when calculating the matrix.
+         */
+        constexpr auto SetzNear( const float new_zNear ) noexcept -> void {
+            zNear = new_zNear;
+        }
     };
 } // namespace PeanutGL

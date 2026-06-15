@@ -532,7 +532,7 @@ namespace PeanutGL {
 
         cameraTransform->SetYaw( cameraControl.yaw );
 
-        cameraTransform->UpdateCameraVectors();
+        cameraTransform->Update( deltaTime );
     }
 
 } // namespace PeanutGL

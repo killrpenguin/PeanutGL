@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Component.hpp"
-#include "ShaderProgram.hpp"
 
 #include <glad/gl.h>
 #include <glm/glm.hpp>
@@ -10,24 +9,20 @@
 #include <quill/LogMacros.h>
 
 namespace PeanutGL {
-    namespace detail {
-        struct Model {};
-        struct TutModel {}; // Specifically for LearnOpenGL.
-    }; // namespace detail
 
     /**
-     * @brief Model component.
-     *
-     * A model component is used to transform an object's vertices from its local Model Space
-     * into World Space. Its specific position, rotation, and scale
-     * within the overall game or application scene.
+     * @brief A component for transforming local space into world space.
      *
      */
 
     class ModelComponent final : public Component {
       private:
-        ResourceHandle< ShaderProgram > shader_program{};
-        float degrees{};
+        float angle{ 0.0F };
+
+        glm::vec3 position{ 0.0F, 0.0F, 0.0F };
+        glm::vec3 rotation_axis{ 0.0F, 1.0F, 0.0F };
+
+        glm::mat4 model{ 1.0F };
 
       public:
         ModelComponent() = delete;
@@ -36,9 +31,7 @@ namespace PeanutGL {
          * @param handle The handle to the shader program.
          * @param componentName The name of the component.
          */
-        explicit ModelComponent(
-            const ResourceHandle< ShaderProgram >& handle, const float degrees = -55.0F,
-            const std::string& componentName = "model" );
+        explicit ModelComponent( const std::string& componentName );
 
         ModelComponent( const ModelComponent& )            = delete;
         ModelComponent( ModelComponent&& )                 = delete;
@@ -65,8 +58,28 @@ namespace PeanutGL {
         auto Render() const noexcept -> void override;
 
         /**
-         * @brief Set the degrees.
+         * @brief Get the Model matrix data calculated during the last update call.
          */
-        auto SetDegrees( const float val ) noexcept -> void;
+        auto MatrixData() const noexcept -> glm::mat4;
+
+        /**
+         * @brief Set the angle.
+         */
+        constexpr auto SetAngle( const float new_angle ) noexcept -> void {
+            angle = new_angle;
+        }
+
+        /**
+         * @brief Set the rotation axis.
+         */
+        constexpr auto SetRotationAxis( const glm::vec3 rotation ) noexcept -> void {
+            rotation_axis = rotation;
+        }
+        /**
+         * @brief Set the Position used to calculate the matrix.
+         */
+        constexpr auto SetPosition( const glm::vec3 pos ) noexcept -> void {
+            position = pos;
+        }
     };
 } // namespace PeanutGL

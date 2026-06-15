@@ -18,6 +18,7 @@
 
 #include "Entity.hpp"
 #include "Component.hpp"
+
 #include "Utilities.hpp"
 
 #include <chrono>

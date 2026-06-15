@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include "ShaderProgram.hpp"
 #include "Utilities.hpp"
 
 #include <cstddef>
@@ -45,8 +46,6 @@ namespace PeanutGL {
         std::string name;
         State state{ State::Uninitialized };
 
-	  
-      
       public:
         // Deleted to eliminate the chances of object slicing.
         Component( const Component& )            = delete;
@@ -81,16 +80,13 @@ namespace PeanutGL {
          * Called every frame.
          * @param deltaTime The time elapsed since the last frame.
          */
-        virtual auto Update( [[maybe_unused]] const std::chrono::milliseconds deltaTime ) -> void = 0;
+        virtual auto Update( const std::chrono::milliseconds /*deltaTime*/ ) -> void = 0;
 
         /**
          * @brief Render the component.
          * Called during the rendering phase.
          */
         virtual auto Render() const noexcept -> void = 0;
-        // template < typename Self > auto Render_( this const Self& self ) noexcept -> void {
-        //     std::forward< Self >( self ).Render();
-        // }
 
         /**
          * @brief Set the owner entity of this component.

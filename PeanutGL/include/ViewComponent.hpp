@@ -19,7 +19,6 @@
 #pragma once
 
 #include "Component.hpp"
-#include "ShaderProgram.hpp"
 
 #include <glad/gl.h>
 #include <glm/glm.hpp>
@@ -36,8 +35,8 @@ namespace PeanutGL {
      */
     class ViewComponent final : public Component {
       private:
-        ResourceHandle< ShaderProgram > shader_program{};
         float zAxis{};
+        glm::mat4 view{ 1.0F };
 
       public:
         ViewComponent() = delete;
@@ -46,9 +45,7 @@ namespace PeanutGL {
          * @param handle The handle to the shader program.
          * @param componentName The name of the component.
          */
-        explicit ViewComponent(
-            const ResourceHandle< ShaderProgram >& handle, const float zAxis = -3.0F,
-            const std::string& componentName = "view" );
+        explicit ViewComponent( const std::string& componentName, const float zAxis = -3.0F );
 
         ViewComponent( const ViewComponent& )            = delete;
         ViewComponent( ViewComponent&& )                 = delete;
@@ -73,6 +70,18 @@ namespace PeanutGL {
          * @brief Render the component.
          */
         auto Render() const noexcept -> void override;
+
+        /**
+         * @brief Get the matrix data calculated during the last update call.
+         */
+        auto MatrixData() const noexcept -> glm::mat4;
+
+        /**
+         * @brief Set the matrix data for the next update call..
+         */
+        auto SetView( const glm::mat4 new_view ) noexcept -> void {
+            view = new_view;
+        }
     };
 
 } // namespace PeanutGL

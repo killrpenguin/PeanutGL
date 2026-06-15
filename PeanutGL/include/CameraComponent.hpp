@@ -19,9 +19,7 @@
 #pragma once
 
 #include "Component.hpp"
-#include "DebugSystem.hpp"
 #include "ShaderProgram.hpp"
-#include "Utilities.hpp"
 
 #include <GLFW/glfw3.h>
 #include <chrono>
@@ -49,8 +47,6 @@ namespace PeanutGL {
         constexpr static float DefaultAspectRatio{};
 
       private:
-        ResourceHandle< ShaderProgram > shader_program{};
-
         glm::vec3 position{ 0.0F, 0.0F, 0.0F };
         glm::vec3 front{ 0.0F, 0.0F, -1.0F };
         glm::vec3 up{ 0.0F, 1.0F, 0.0F };
@@ -82,11 +78,9 @@ namespace PeanutGL {
          * @brief Constructor with an optional name.
          * @param componentName The name of the component.
          */
-        explicit CameraComponent(
-            const ResourceHandle< ShaderProgram >& handle, const std::string& componentName = "view" )
-            : Component{ componentName }, shader_program{ handle } {
+        explicit CameraComponent( const std::string& componentName )
+            : Component{ componentName } {
             Initialize();
-            UpdateCameraVectors();
         };
 
         CameraComponent( const CameraComponent& )            = delete;
@@ -141,23 +135,18 @@ namespace PeanutGL {
         }
 
         /**
+         * @brief Get the field of view from the camera.
+         */
+        auto GetFieldofView() const noexcept -> float {
+            return static_cast< float >( field_of_view );
+        }
+
+        /**
          * @brief Apply direction based movememnt to camera data.
          * @param direction The direction to move as a CameraMovement enum).
          * @param velocity The velocity of the movement.
          */
         auto UpdateMovement( const CameraMovement direction, const float velocity ) noexcept -> void;
-
-        auto UpdateCameraVectors() noexcept -> void {
-            const float frontX{ glm::cos( glm::radians( yaw() ) ) * glm::cos( glm::radians( pitch() ) ) };
-            const float frontY{ glm::sin( glm::radians( pitch() ) ) };
-            const float frontZ{ glm::sin( glm::radians( yaw() ) ) * glm::cos( glm::radians( pitch() ) ) };
-
-            front = glm::normalize( glm::vec3( frontX, frontY, frontZ ) );
-
-            right = glm::normalize( glm::cross( front, world_up ) );
-
-            up = glm::normalize( glm::cross( right, front ) );
-        }
     };
 
 } // namespace PeanutGL

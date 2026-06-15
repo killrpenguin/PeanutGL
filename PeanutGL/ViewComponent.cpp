@@ -19,9 +19,8 @@
 #include "ViewComponent.hpp"
 
 namespace PeanutGL {
-    ViewComponent::ViewComponent(
-        const ResourceHandle< ShaderProgram >& handle, const float zAxis, const std::string& componentName )
-        : Component( componentName ), shader_program{ handle }, zAxis{ zAxis } {
+    ViewComponent::ViewComponent( const std::string& componentName, const float zAxis )
+        : Component( componentName ), zAxis{ zAxis } {
         Initialize();
     }
 
@@ -29,15 +28,15 @@ namespace PeanutGL {
         SetState();
     }
 
-    auto ViewComponent::Update( [[maybe_unused]] const std::chrono::milliseconds deltaTime ) -> void {
+    auto ViewComponent::MatrixData() const noexcept -> glm::mat4 {
+        return view;
+    }
+
+    auto ViewComponent::Update( const std::chrono::milliseconds /*deltaTime*/ ) -> void {
+        view = glm::translate( view, glm::vec3( 0.0F, 0.0F, zAxis ) );
     }
 
     auto ViewComponent::Render() const noexcept -> void {
-        auto view = glm::mat4( 1.0F );
-
-        view = glm::translate( view, glm::vec3( 0.0F, 0.0F, zAxis ) );
-
-        shader_program->SetUniform( GetName(), view );
     }
 
 } // namespace PeanutGL

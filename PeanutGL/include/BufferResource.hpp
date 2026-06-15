@@ -27,9 +27,6 @@
 #include <quill/LogMacros.h>
 
 namespace PeanutGL {
-
-
-  
     namespace detail {
         struct PersistentVBO {};
         struct ShaderBufferObject {};
@@ -77,7 +74,6 @@ namespace PeanutGL {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // SSBO
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     template < typename T >
     concept FourThirtyLayoutReq = requires( T data ) {
         // NOLINTNEXTLINE

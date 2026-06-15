@@ -25,7 +25,7 @@ target_compile_features(Triangle PRIVATE)
 
 target_link_libraries(Triangle PRIVATE "${LIBUNWIND_LIB_DIR}/libunwind.a")
 
-target_link_libraries(Triangle PRIVATE PeanutGL imgui glfw glad readerwriterqueue quill::quill)
+target_link_libraries(Triangle PRIVATE PeanutGL imgui glfw glm::glm glad readerwriterqueue quill::quill)
 
 target_link_libraries(Triangle INTERFACE stb_image)
 
@@ -58,6 +58,6 @@ target_compile_features(BasicText PRIVATE)
 
 target_link_libraries(BasicText PRIVATE "${LIBUNWIND_LIB_DIR}/libunwind.a")
 
-target_link_libraries(BasicText PRIVATE PeanutGL imgui glfw glad readerwriterqueue quill::quill)
+target_link_libraries(BasicText PRIVATE PeanutGL imgui glfw glm::glm glad readerwriterqueue quill::quill)
 
 target_link_libraries(BasicText INTERFACE stb_image)

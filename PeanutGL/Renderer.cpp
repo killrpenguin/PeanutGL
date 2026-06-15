@@ -18,15 +18,21 @@
 
 #include "Renderer.hpp"
 #include "CameraComponent.hpp"
+#include "DebugSystem.hpp"
 #include "Entity.hpp"
 
 #include "ImGuiSystem.hpp"
+#include "ModelComponent.hpp"
+#include "ProjectionComponent.hpp"
 #include "ResourceManager.hpp"
+#include "ShaderProgram.hpp"
 #include "Utilities.hpp"
 
+#include "ViewComponent.hpp"
 #include "glad/gl.h"
 
 #include <cassert>
+#include <quill/LogMacros.h>
 #include <span>
 
 namespace PeanutGL {
@@ -40,22 +46,49 @@ namespace PeanutGL {
     auto Renderer::Render(
         std::span< Entity* > entities, CameraComponent* camera, ImGuiSystem* imguiSystem,
         ResourceManager* resourceManager ) const noexcept -> void {
-        if ( not_equal( camera, nullptr ) ) {          /*placeholder*/
+        if ( equal( camera, nullptr ) ) {
+            LOG_CRITICAL( QuillPtr(), "The camera pointer was null." );
+            return;
         }
 
-        if ( not_equal( resourceManager, nullptr ) ) { /*placeholder*/
+        if ( equal( resourceManager, nullptr ) ) {
+            LOG_CRITICAL( QuillPtr(), "The resource manager pointer was null." );
+            return;
         }
 
         constexpr float Alpha{ 1.0F };
-
         glClearColor( 0.0F, 0.0F, 0.0F, Alpha );
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
         for ( const auto& entity : entities ) {
+            auto* shader_program{ resourceManager->GetResource< ShaderProgram >( entity->GetName() ) };
+
+            if ( equal( shader_program, nullptr ) ) {
+                LOG_ERROR( QuillPtr(), "The resource manager returned a nullptr to a shader program." );
+                return;
+            }
+
+            if ( auto* const model = entity->GetComponent< ModelComponent >(); not_equal( model, nullptr ) ) {
+                if ( const bool active = model->IsActive(); active ) {
+                    shader_program->SetUniform( model->GetName(), model->MatrixData() );
+                }
+            }
+
+            if ( auto* const view = entity->GetComponent< ViewComponent >(); not_equal( view, nullptr ) ) {
+                if ( const bool active = view->IsActive(); active ) {
+                    shader_program->SetUniform( view->GetName(), view->MatrixData() );
+                }
+            }
+
+            if ( auto* const projection = entity->GetComponent< ProjectionComponent >();
+                 not_equal( projection, nullptr ) ) {
+                if ( const bool active = projection->IsActive(); active ) {
+                    shader_program->SetUniform( projection->GetName(), projection->MatrixData() );
+                }
+            }
+
             entity->Render();
         }
-
-        // glDrawElements( GL_TRIANGLES, Count, GL_UNSIGNED_INT, nullptr );
 
         if ( not_equal( imguiSystem, nullptr ) ) { imguiSystem->Render(); }
 

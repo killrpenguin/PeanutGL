@@ -30,6 +30,7 @@ set(HEADER_LIST
 	"${INCLUDE_PATH}/ModelComponent.hpp"
 	"${INCLUDE_PATH}/ProjectionComponent.hpp"
 	"${INCLUDE_PATH}/ViewComponent.hpp"
+	"${INCLUDE_PATH}/RotationComponent.hpp"
 )
 
 set(SRC_LIST 
@@ -51,6 +52,7 @@ set(SRC_LIST
 	"MeshComponent.cpp"
 	"CameraComponent.cpp"
 	"BufferResource.cpp"
+	"RotationComponent.cpp"
 )
 
 set_source_files_properties(STBImage.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION TRUE)

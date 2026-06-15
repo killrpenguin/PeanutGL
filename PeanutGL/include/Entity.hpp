@@ -19,6 +19,7 @@
 #pragma once
 
 #include "Component.hpp"
+#include "ShaderProgram.hpp"
 #include "Utilities.hpp"
 
 #include <chrono>
@@ -65,8 +66,8 @@ namespace PeanutGL {
          * @brief Get the name of the entity.
          * @return The name of the entity.
          */
-        constexpr auto GetName() const noexcept -> std::string_view {
-            return std::string_view( name );
+        constexpr auto GetName() noexcept -> std::string& {
+            return name;
         }
 
         /**

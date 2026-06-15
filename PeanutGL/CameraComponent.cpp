@@ -17,6 +17,11 @@
  */
 
 #include "CameraComponent.hpp"
+#include "Entity.hpp"
+#include "ProjectionComponent.hpp"
+#include "Utilities.hpp"
+#include "ViewComponent.hpp"
+
 #include <glm/ext/matrix_transform.hpp>
 
 namespace PeanutGL {
@@ -25,16 +30,32 @@ namespace PeanutGL {
         SetState();
     }
 
-    auto CameraComponent::Update( [[maybe_unused]] const std::chrono::milliseconds deltaTime ) -> void {
+    auto CameraComponent::Update( const std::chrono::milliseconds /* deltaTime */ ) -> void {
+        const float frontX{ glm::cos( glm::radians( yaw() ) ) * glm::cos( glm::radians( pitch() ) ) };
+        const float frontY{ glm::sin( glm::radians( pitch() ) ) };
+        const float frontZ{ glm::sin( glm::radians( yaw() ) ) * glm::cos( glm::radians( pitch() ) ) };
+
+        front = glm::normalize( glm::vec3( frontX, frontY, frontZ ) );
+
+        right = glm::normalize( glm::cross( front, world_up ) );
+
+        up = glm::normalize( glm::cross( right, front ) );
+
+        Entity* const parent{ GetOwner() };
+
+        if ( not_equal( parent, nullptr ) ) {
+            if ( auto* const view = parent->GetComponent< ViewComponent >(); not_equal( view, nullptr ) ) {
+                view->SetView( GetViewMatrix() );
+            }
+
+            if ( auto* const projection = parent->GetComponent< ProjectionComponent >();
+                 not_equal( projection, nullptr ) ) {
+                projection->SetDegrees( GetFieldofView() );
+            }
+        }
     }
 
     auto CameraComponent::Render() const noexcept -> void {
-        const glm::mat4 view_matrix = GetViewMatrix();
-
-        constexpr float zAxis{ -3.0F };
-        auto view = glm::translate( view_matrix, glm::vec3( 0.0F, 0.0F, zAxis ) );
-
-        shader_program->SetUniform( GetName(), view );
     }
     auto CameraComponent::UpdateMovement( const CameraMovement direction, const float velocity ) noexcept -> void {
         switch ( direction ) {
