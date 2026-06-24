@@ -27,20 +27,21 @@ namespace {
     using TriangleVAO  = PeanutGL::BasicVAO< VertexType >;
     using TriangleMesh = PeanutGL::MeshComponent< VertexType, unsigned int >;
 
+    // NOLINTBEGIN(misc-include-cleaner)
     // clang-format off
-	  [[maybe_unused]] constexpr std::array<glm::vec3, 10> CubePositions {
-    glm::vec3( 0.0F,  0.0F,  0.0F), 
-    glm::vec3( 2.0F,  5.0F, -15.0F), 
-    glm::vec3(-1.5F, -2.2F, -2.5F),  
-    glm::vec3(-3.8F, -2.0F, -12.3F),  
-    glm::vec3( 2.4F, -0.4F, -3.5F),  
-    glm::vec3(-1.7F,  3.0F, -7.5F),  
-    glm::vec3( 1.3F, -2.0F, -2.5F),  
-    glm::vec3( 1.5F,  2.0F, -2.5F), 
-    glm::vec3( 1.5F,  0.2F, -1.5F), 
-    glm::vec3(-1.3F,  1.0F, -1.5F)  
+	[[maybe_unused]] constexpr std::array<glm::vec3, 9> CubePositions {
+		glm::vec3( 2.0F,  5.0F, -15.0F), 
+		glm::vec3(-1.5F, -2.2F, -2.5F),  
+		glm::vec3(-3.8F, -2.0F, -12.3F),  
+		glm::vec3( 2.4F, -0.4F, -3.5F),  
+		glm::vec3(-1.7F,  3.0F, -7.5F),  
+		glm::vec3( 1.3F, -2.0F, -2.5F),  
+		glm::vec3( 1.5F,  2.0F, -2.5F), 
+		glm::vec3( 1.5F,  0.2F, -1.5F), 
+		glm::vec3(-1.3F,  1.0F, -1.5F)  
 	  };
     // clang-format on
+    // NOLINTEND(misc-include-cleaner)
 
 } // namespace
 
@@ -68,7 +69,13 @@ void PeanutGL::EngineSetup( Engine* const engine ) {
 
         engine->SetActiveCamera( triangle_entity->AddComponent< CameraComponent >( "FlyingCamera" ) );
 
-        (void)triangle_entity->AddComponent< ModelComponent >( "model" );
+        auto* models_array{ triangle_entity->AddComponent< ModelsArray >( "model_array" ) };
+
+        models_array->AddModel( "model" );
+
+        for ( const auto& pos : CubePositions ) {
+            models_array->AddModel( "model", pos );
+        }
 
         (void)triangle_entity->AddComponent< ViewComponent >( "view" );
 
@@ -82,9 +89,8 @@ void PeanutGL::EngineSetup( Engine* const engine ) {
         VAO->SetLayout( vao_layout );
 
         shader_program->SetUniform( container );
-        shader_program->SetUniform( awesomeface );
 
-        triangle_component->SetIndices( { 0, 1, 3, 1, 2, 3 } );
+        shader_program->SetUniform( awesomeface );
 
         triangle_entity->Initialize();
 

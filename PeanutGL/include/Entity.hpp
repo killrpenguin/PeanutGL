@@ -19,7 +19,6 @@
 #pragma once
 
 #include "Component.hpp"
-#include "ShaderProgram.hpp"
 #include "Utilities.hpp"
 
 #include <chrono>
@@ -34,13 +33,22 @@ namespace PeanutGL {
     template < typename T >
     concept DerivedComponentBase = std::is_base_of_v< Component, T >;
 
+    template < typename... Ts >
+    concept DerivedComponentsBase = ( DerivedComponentBase< Ts > && ... );
+
+    // template < typename... Ts > struct UniformsPack {
+    //     template < template < typename... > class Targets > using Get = Targets< Ts... >;
+    // };
+    //
+    // using UniformTypes = UniformsPack< ModelComponent, ProjectionComponent, ViewComponent >;
+
     class Entity {
       private:
-        std::string name;
+        std::string name{};
         bool active{ true };
 
         std::vector< std::unique_ptr< Component > > components;
-        std::unordered_map< size_t, Component* > component_map;
+        std::unordered_map< std::size_t, Component* > component_map;
 
       public:
         // Deleted to eliminate the chances of object slicing.
@@ -100,7 +108,7 @@ namespace PeanutGL {
         /**
          * @brief Render all components of the entity.
          */
-        auto Render() -> void;
+        auto Render( ResourceManager* const resourceManager ) -> void;
 
         /**
          * @brief Add a component to the entity.
@@ -135,7 +143,7 @@ namespace PeanutGL {
         template < typename T >
             requires DerivedComponentBase< T >
         auto GetComponent() const noexcept -> T* {
-            size_t typeID = Component::GetTypeID< T >();
+            std::size_t typeID = Component::GetTypeID< T >();
             auto iter{ component_map.find( typeID ) };
 
             if ( not_equal( iter, component_map.end() ) ) {
@@ -162,6 +170,15 @@ namespace PeanutGL {
         template < typename T >
             requires DerivedComponentBase< T >
         auto HasComponent() const noexcept -> bool;
+
+        /**
+         * @brief Get a span of components that need to set a uniform.
+         * @tparam T The type of component to check for.
+         * @return A span of components that use an OpenGL uniform.
+         */
+        template < typename... Args >
+            requires DerivedComponentsBase< Args... >
+        auto GetUniformComponents() noexcept -> std::vector< Component* >;
     };
 
 } // namespace PeanutGL

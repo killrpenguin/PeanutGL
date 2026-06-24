@@ -15,10 +15,11 @@
 #pragma once
 
 #include "ShaderProgram.hpp"
-#include "Utilities.hpp"
+#include "UtilityTypes.hpp"
 
 #include <cstddef>
 #include <string>
+
 namespace PeanutGL {
     // Forward declaration
     class Entity;
@@ -47,11 +48,10 @@ namespace PeanutGL {
         State state{ State::Uninitialized };
 
       public:
-        // Deleted to eliminate the chances of object slicing.
         Component( const Component& )            = delete;
-        Component( Component&& )                 = delete;
+        Component( Component&& )                 = default;
         Component& operator=( const Component& ) = delete;
-        Component& operator=( Component&& )      = delete;
+        Component& operator=( Component&& )      = default;
 
         /**
          * @brief Constructor with optional name.
@@ -71,9 +71,6 @@ namespace PeanutGL {
          * Called when the component is added to an entity.
          */
         virtual auto Initialize() noexcept -> void = 0;
-        // template < typename Self > auto Initialize( this Self&& self ) noexcept -> void {
-        //     std::forward< Self >( self ).Initialize();
-        // }
 
         /**
          * @brief Update the component.
@@ -87,6 +84,8 @@ namespace PeanutGL {
          * Called during the rendering phase.
          */
         virtual auto Render() const noexcept -> void = 0;
+
+        virtual auto MatrixData() const noexcept -> glm::mat4 = 0;
 
         /**
          * @brief Set the owner entity of this component.
@@ -121,7 +120,7 @@ namespace PeanutGL {
         }
 
         /**
-         * @brief Activate the component..
+         * @brief Activate the component.
          */
         constexpr auto SetState( State new_state = State::Active ) noexcept -> void {
             switch ( new_state ) {

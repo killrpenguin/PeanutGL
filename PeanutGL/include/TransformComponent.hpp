@@ -49,5 +49,9 @@ namespace PeanutGL {
          * @brief Render the component.
          */
         auto Render() const noexcept -> void override;
+
+        auto MatrixData() const noexcept -> glm::mat4 override {
+            return {};
+        }
     };
 } // namespace PeanutGL

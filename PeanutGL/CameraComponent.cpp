@@ -57,6 +57,7 @@ namespace PeanutGL {
 
     auto CameraComponent::Render() const noexcept -> void {
     }
+
     auto CameraComponent::UpdateMovement( const CameraMovement direction, const float velocity ) noexcept -> void {
         switch ( direction ) {
             case CameraMovement::FORWARD : position += front * velocity; break;

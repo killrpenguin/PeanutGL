@@ -107,6 +107,10 @@ namespace PeanutGL {
          */
         auto Render() const noexcept -> void override;
 
+        auto MatrixData() const noexcept -> glm::mat4 override {
+            return {};
+        }
+
         /**
          * @brief Set the aspect ratio for perspective projection.
          * @param ratio The aspect ratio (width / height).

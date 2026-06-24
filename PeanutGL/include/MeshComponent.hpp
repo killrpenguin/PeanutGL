@@ -87,6 +87,10 @@ namespace PeanutGL {
          */
         auto Render() const noexcept -> void override;
 
+        auto MatrixData() const noexcept -> glm::mat4 override {
+            return {};
+        }
+
         /**
          * @brief Define the vertex array attributes of the mesh.
          * @param attrs .

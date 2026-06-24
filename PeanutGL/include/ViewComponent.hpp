@@ -74,7 +74,7 @@ namespace PeanutGL {
         /**
          * @brief Get the matrix data calculated during the last update call.
          */
-        auto MatrixData() const noexcept -> glm::mat4;
+        auto MatrixData() const noexcept -> glm::mat4 override;
 
         /**
          * @brief Set the matrix data for the next update call..

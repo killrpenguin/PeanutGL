@@ -64,7 +64,7 @@ namespace PeanutGL {
         /**
          * @brief Get the matrix data calculated during the last update call.
          */
-        auto MatrixData() const noexcept -> glm::mat4;
+        auto MatrixData() const noexcept -> glm::mat4 override;
 
         /**
          * @brief Set the degrees. The component will convert the float to radians.

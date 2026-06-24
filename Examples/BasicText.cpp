@@ -56,15 +56,13 @@ void PeanutGL::EngineSetup( Engine* const engine ) {
         SSBO->Write( mesh->GetVertices() );
 
         engine->SetActiveCamera( text_entity->AddComponent< CameraComponent >( "FlyingCamera" ) );
-        
+
         (void)text_entity->AddComponent< ModelComponent >( "model" );
 
         (void)text_entity->AddComponent< ViewComponent >( "view" );
 
         (void)text_entity->AddComponent< ProjectionComponent >(
             "projection", engine->GetPlatform()->GetWindowWidth(), engine->GetPlatform()->GetWindowHeight() );
-
-        shader_program->SetUniform( container );
 
         text_entity->Initialize();
     } else {

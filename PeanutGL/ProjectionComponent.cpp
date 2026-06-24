@@ -24,4 +24,5 @@ namespace PeanutGL {
 
     auto ProjectionComponent::Render() const noexcept -> void {
     }
+
 } // namespace PeanutGL

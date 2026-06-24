@@ -25,9 +25,9 @@
 #include "Utilities.hpp"
 
 #include <glad/gl.h>
-
 #include <glm/gtc/type_ptr.hpp>
 #include <quill/LogMacros.h>
+
 #include <string_view>
 #include <unordered_map>
 
@@ -68,6 +68,10 @@ namespace PeanutGL {
         ~ShaderProgram() override {
             Unload();
             glDeleteProgram( program_handle );
+        }
+
+        constexpr auto Use() const noexcept -> void {
+            glUseProgram( program_handle );
         }
 
         auto begin() -> iterator {
