@@ -2,7 +2,7 @@ set(INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(HEADER_LIST 
 	"${INCLUDE_PATH}/BufferResource.hpp"
-	"${INCLUDE_PATH}/UniformResource.hpp"
+	"${INCLUDE_PATH}/UniformBufferResource.hpp"
 	"${INCLUDE_PATH}/ResourceManager.hpp"
 	"${INCLUDE_PATH}/MemoryBarrierResource.hpp"
 	"${INCLUDE_PATH}/MaterialResource.hpp"
@@ -52,6 +52,7 @@ set(SRC_LIST
 	"MeshComponent.cpp"
 	"CameraComponent.cpp"
 	"BufferResource.cpp"
+	"UniformBufferResource.cpp"
 	"RotationComponent.cpp"
 )
 
@@ -72,7 +73,7 @@ target_precompile_headers(PeanutGL PUBLIC "${INCLUDE_PATH}/pch.hpp")
 set_target_properties(PeanutGL PROPERTIES UNITY_BUILD ON)
 
 target_compile_options(PeanutGL PUBLIC
-    $<$<CONFIG:Debug>:-g -O0>
+    $<$<CONFIG:Debug>:-g -O3>
     $<$<CONFIG:Release>:-O3 -DNDEBUG>
     $<$<CXX_COMPILER_ID:Clang>: -Wall
 				-Wdeprecated

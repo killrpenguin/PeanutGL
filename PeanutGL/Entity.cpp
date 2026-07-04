@@ -18,20 +18,19 @@
 
 #include "Entity.hpp"
 #include "Component.hpp"
-
 #include "DebugSystem.hpp"
 #include "ModelComponent.hpp"
-#include "ProjectionComponent.hpp"
 #include "ShaderProgram.hpp"
+#include "UniformBufferResource.hpp"
 #include "Utilities.hpp"
-#include "ViewComponent.hpp"
+
+#include <quill/LogMacros.h>
 
 #include <chrono>
 #include <cstddef>
 #include <functional>
-#include <quill/LogMacros.h>
-#include <utility>
-#include <variant>
+#include <ranges>
+#include <vector>
 
 namespace PeanutGL {
     namespace chrono = std::chrono;
@@ -52,9 +51,11 @@ namespace PeanutGL {
     }
 
     auto Entity::Render( ResourceManager* const resourceManager ) -> void {
+        constexpr auto Transform = std::views::transform;
+
         if ( !active ) { return; }
 
-        auto* shader_program{ resourceManager->GetResource< ShaderProgram >( GetName() ) };
+        const ShaderProgram* const shader_program{ resourceManager->GetResource< ShaderProgram >( GetName() ) };
 
         if ( equal( shader_program, nullptr ) ) {
             LOG_ERROR( QuillPtr(), "The resource manager returned a nullptr to a shader program." );
@@ -62,24 +63,27 @@ namespace PeanutGL {
         }
 
         shader_program->Use();
-        const auto vals{ GetUniformComponents< ModelComponent, ProjectionComponent, ViewComponent >() };
 
-        for ( const auto& value : vals ) {
-            LOG_INFO( QuillPtr(), "{}", value->GetName() );
-            shader_program->SetUniform( value->GetName(), value->MatrixData() );
+        const auto component_ptrs =
+            components | Transform( []( std::unique_ptr< Component >& cmp ) { return cmp.get(); } );
+
+        std::vector< const ModelComponent* > models_array_sub_range;
+
+        if ( auto* const model_component = GetComponent< ModelsArray >(); not_equal( model_component, nullptr ) ) {
+            const auto model_ptrs =
+                *model_component | Transform( []( const ModelComponent& model ) { return &model; } );
+
+            models_array_sub_range = std::ranges::to< std::vector< const ModelComponent* > >( model_ptrs );
         }
 
-        if ( auto* model_component = GetComponent< ModelsArray >(); not_equal( model_component, nullptr ) ) {
-            for ( auto& model : *model_component ) {
-                shader_program->SetUniform( model.GetName(), model.MatrixData() );
+        const auto all_components = std::views::concat( component_ptrs, models_array_sub_range );
 
-                model.Render();
-            }
-        }
-
-        for ( auto& component : components ) {
+        for ( const auto* component : all_components ) {
             if ( !component->IsActive() ) { continue; }
 
+            if ( component->NeedsUniform() ) {
+                shader_program->SetUniform( component->GetName(), component->MatrixData() );
+            }
             component->Render();
         }
     }
@@ -114,22 +118,16 @@ namespace PeanutGL {
         return not_equal( iter, component_map.end() );
     }
 
-    template < typename... Args >
-        requires DerivedComponentsBase< Args... >
-    auto Entity::GetUniformComponents() noexcept -> std::vector< Component* > {
-        const std::vector< std::size_t > type_ids = {
-            Component::GetTypeID< Args...[0] >(),
-            Component::GetTypeID< Args...[1] >(),
-            Component::GetTypeID< Args...[2] >(),
-        };
+    template < typename T >
+        requires DerivedComponentBase< T >
+    auto Entity::DownCastComponent( const Component* ptr ) noexcept -> const T* {
+        const std::size_t type_id{ Component::GetTypeID< T >() };
 
-        std::vector< Component* > uniform_components;
-        for ( const auto& value : type_ids ) {
-            auto iter{ component_map.find( value ) };
-            if ( not_equal( iter, component_map.end() ) ) { uniform_components.push_back( iter->second ); }
+        if ( auto iter = component_map.find( type_id ); not_equal( iter, component_map.end() ) ) {
+            const T* derived_type = dynamic_cast< const T* >( ptr );
+            if ( derived_type == iter->second ) { return derived_type; }
         }
-
-        return uniform_components;
-    };
+        return nullptr;
+    }
 
 } // namespace PeanutGL

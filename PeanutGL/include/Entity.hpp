@@ -19,6 +19,8 @@
 #pragma once
 
 #include "Component.hpp"
+#include "ResourceManager.hpp"
+#include "ShaderProgram.hpp"
 #include "Utilities.hpp"
 
 #include <chrono>
@@ -35,12 +37,6 @@ namespace PeanutGL {
 
     template < typename... Ts >
     concept DerivedComponentsBase = ( DerivedComponentBase< Ts > && ... );
-
-    // template < typename... Ts > struct UniformsPack {
-    //     template < template < typename... > class Targets > using Get = Targets< Ts... >;
-    // };
-    //
-    // using UniformTypes = UniformsPack< ModelComponent, ProjectionComponent, ViewComponent >;
 
     class Entity {
       private:
@@ -163,6 +159,7 @@ namespace PeanutGL {
         auto RemoveComponent() noexcept -> bool;
 
         /**
+         * @brief This was for practice and testing.
          * @brief Check if the entity has a component of a specific type.
          * @tparam T The type of component to check for.
          * @return True if the entity has the component, false otherwise.
@@ -171,14 +168,9 @@ namespace PeanutGL {
             requires DerivedComponentBase< T >
         auto HasComponent() const noexcept -> bool;
 
-        /**
-         * @brief Get a span of components that need to set a uniform.
-         * @tparam T The type of component to check for.
-         * @return A span of components that use an OpenGL uniform.
-         */
-        template < typename... Args >
-            requires DerivedComponentsBase< Args... >
-        auto GetUniformComponents() noexcept -> std::vector< Component* >;
+        template < typename T >
+            requires DerivedComponentBase< T >
+        auto DownCastComponent( const Component* ptr ) noexcept -> const T*;
     };
 
 } // namespace PeanutGL

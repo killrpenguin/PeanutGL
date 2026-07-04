@@ -23,6 +23,8 @@ namespace PeanutGL {
     }
 
     auto ProjectionComponent::Render() const noexcept -> void {
+        constexpr GLsizei Count{ 36 };
+        glDrawArrays( GL_TRIANGLES, 0, Count );
     }
 
 } // namespace PeanutGL

@@ -143,6 +143,8 @@ namespace PeanutGL {
 
         auto Size() const noexcept -> size_type;
 
+        auto Hello() const noexcept -> void;
+
         /**
          * @brief Add a new ModelComponent to the array.
          * @param args[0] ComponenetName as a const std::string&.

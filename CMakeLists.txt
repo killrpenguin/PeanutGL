@@ -42,4 +42,4 @@ include(CMake/LibunwindExtern.cmake)
 add_subdirectory(PeanutGL)
 
 # The executable code is here
-add_subdirectory(Examples)
+add_subdirectory(Playground)

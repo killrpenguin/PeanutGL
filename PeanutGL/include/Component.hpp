@@ -14,13 +14,37 @@
 
 #pragma once
 
+#include "ResourceManager.hpp"
 #include "ShaderProgram.hpp"
 #include "UtilityTypes.hpp"
 
 #include <cstddef>
 #include <string>
+#include <variant>
 
 namespace PeanutGL {
+
+    namespace detail {
+        struct Uniform {};
+        struct UniformBuffer {};
+
+        using UniformType = std::variant< std::monostate, Uniform, UniformBuffer >;
+
+        struct UniformTypeVisitor {
+            ResourceManager* resourceManager;
+
+            auto operator()( std::monostate /*uniform*/ ) -> void {
+            }
+
+            auto operator()( const Uniform& /*uniform*/ ) -> void {
+            }
+
+            auto operator()( const UniformBuffer& /*uniform_buffer*/ ) -> void {
+            }
+        };
+
+    }; // namespace detail
+
     // Forward declaration
     class Entity;
 
@@ -45,7 +69,9 @@ namespace PeanutGL {
       private:
         Entity* owner{ nullptr };
         std::string name;
+
         State state{ State::Uninitialized };
+        detail::UniformType uniform_type{ std::monostate() };
 
       public:
         Component( const Component& )            = delete;
@@ -133,6 +159,36 @@ namespace PeanutGL {
                 case State::Uninitialized:
                 case State::Destroyed    : return;
             };
+        }
+
+        /**
+         * @brief Get the Uniform tag.
+         */
+        constexpr auto GetUniform() const noexcept -> detail::UniformType {
+            return uniform_type;
+        }
+
+        /**
+         * @brief Associate the component to an OpenGL Uniform.
+         */
+        constexpr auto UseUniform() noexcept -> void {
+            uniform_type = detail::Uniform();
+        }
+
+        /**
+         * @brief Associate the component to an OpenGL Uniform Buffer Object.
+         */
+        constexpr auto UseUniformBuffer() noexcept -> void {
+            uniform_type = detail::UniformBuffer();
+        }
+
+        /**
+         * @brief Check if the component is tagged for holding uniform data .
+         * @return True if the component holds uniform data.
+         */
+        constexpr auto NeedsUniform() const noexcept -> bool {
+            return std::holds_alternative< detail::Uniform >( uniform_type ) or
+                   std::holds_alternative< detail::UniformBuffer >( uniform_type );
         }
 
         /**

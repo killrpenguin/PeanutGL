@@ -18,6 +18,7 @@
 
 #include "ModelComponent.hpp"
 #include "Component.hpp"
+#include "DebugSystem.hpp"
 
 #include <cassert>
 #include <quill/LogMacros.h>
@@ -54,7 +55,7 @@ namespace PeanutGL {
         for ( auto& model : models ) {
             model.SetState();
         }
-		SetState();
+        SetState();
     }
 
     auto ModelsArray::Update( const std::chrono::milliseconds deltaTime ) -> void {
@@ -70,4 +71,7 @@ namespace PeanutGL {
         return models.size();
     }
 
+    auto ModelsArray::Hello() const noexcept -> void {
+        LOG_INFO( QuillPtr(), "Hello from my test. My size is {}", Size() );
+    }
 } // namespace PeanutGL

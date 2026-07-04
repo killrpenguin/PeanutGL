@@ -30,6 +30,7 @@ namespace PeanutGL {
     namespace detail {
         struct PersistentVBO {};
         struct ShaderBufferObject {};
+
     }; // namespace detail
 
     template < typename T, typename BufferType > class Buffer final : public Resource {
@@ -179,6 +180,7 @@ namespace PeanutGL {
     }
 
     template < typename T > using SSBOResource = Buffer< T, detail::ShaderBufferObject >;
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // PersistentVBO
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -210,9 +212,10 @@ namespace PeanutGL {
 
         ~Buffer() noexcept override;
 
-        Buffer( const Buffer& )                = delete;
+        Buffer( const Buffer& )            = delete;
+        Buffer& operator=( const Buffer& ) = delete;
+
         Buffer( Buffer&& ) noexcept            = default;
-        Buffer& operator=( const Buffer& )     = delete;
         Buffer& operator=( Buffer&& ) noexcept = default;
 
         auto Load() noexcept -> bool override;
@@ -272,4 +275,5 @@ namespace PeanutGL {
     }
 
     template < typename T > using PersistentVBO = Buffer< T, detail::PersistentVBO >;
+
 } // namespace PeanutGL
