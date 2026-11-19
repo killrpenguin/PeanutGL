@@ -103,7 +103,6 @@ namespace PeanutGL {
 
         explicit Buffer( const std::string& identifier, const unsigned int binding = 0 ) noexcept
             : Resource( identifier ), binding_index{ binding } {
-            Load();
         }
 
         ~Buffer() noexcept override;
@@ -207,7 +206,6 @@ namespace PeanutGL {
 
         explicit Buffer( const std::string& identifier ) noexcept
             : Resource( identifier ) {
-            Load();
         }
 
         ~Buffer() noexcept override;

@@ -73,31 +73,16 @@ target_precompile_headers(PeanutGL PUBLIC "${INCLUDE_PATH}/pch.hpp")
 set_target_properties(PeanutGL PROPERTIES UNITY_BUILD ON)
 
 target_compile_options(PeanutGL PUBLIC
-    $<$<CONFIG:Debug>:-g -O3>
-    $<$<CONFIG:Release>:-O3 -DNDEBUG>
-    $<$<CXX_COMPILER_ID:Clang>: -Wall
-				-Wdeprecated
-				-Wextra
-				-Wcast-align
-				-Wdouble-promotion
-				-Wimplicit-fallthrough
-				-Wmisleading-indentation
-				-Wnon-virtual-dtor
-				-Wnull-dereference
-				-Wold-style-cast
-				-Woverloaded-virtual
-				-Wpedantic
-				-Wshadow
-				-Wundef
-				-Wuninitialized
-				-std=c++2c>
+    $<$<CONFIG:Debug>: ${DEBUG_COMPILER_FLAGS}>
+    $<$<CONFIG:Release>: ${RELEASE_COMPILER_FLAGS}>
+    $<$<CXX_COMPILER_ID:Clang>: ${CLANG_COMPILER_FLAGS}>
 )
 
 target_include_directories(PeanutGL PUBLIC include)
 
-target_include_directories(PeanutGL SYSTEM PRIVATE "${LIBUNWIND_INCLUDE_DIR}")
+# target_include_directories(PeanutGL SYSTEM PRIVATE "${LIBUNWIND_INCLUDE_DIR}")
 
-target_link_libraries(PeanutGL PRIVATE "${LIBUNWIND_LIB_DIR}/libunwind.a")
+# target_link_libraries(PeanutGL PRIVATE "${LIBUNWIND_LIB_DIR}/libunwind.a")
 
 target_link_libraries(PeanutGL PUBLIC imgui glfw glm::glm glad quill::quill stb_image PRIVATE 
 	readerwriterqueue)

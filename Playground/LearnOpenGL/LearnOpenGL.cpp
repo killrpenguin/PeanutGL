@@ -38,7 +38,7 @@ namespace {
 		glm::vec3( 1.3F, -2.0F, -2.5F),  
 		glm::vec3( 1.5F,  2.0F, -2.5F), 
 		glm::vec3( 1.5F,  0.2F, -1.5F), 
-		glm::vec3(-1.3F,  1.0F, -1.5F)  
+		glm::vec3(-1.3F,  1.0F, -1.5F),
 	  };
     // clang-format on
     // NOLINTEND(misc-include-cleaner)
@@ -50,13 +50,16 @@ void PeanutGL::EngineSetup( Engine* const engine ) {
     const auto frag_shader{ engine->LoadResource< FragShader >( "TriangleFrag" ) };
 
     const auto VBO{ engine->LoadResource< TriangleVBO >( "VBO" ) };
-    const auto VAO{ engine->LoadResource< TriangleVAO >( "VAO", VBO->Name(), Stride< VertexType >( 5 ) ) };
+    const auto VAO{ engine->LoadResource< TriangleVAO >(
+        "VAO", VBO->Name(), Stride< VertexType >( 5 ) ) };
 
     const auto container{ engine->LoadResource< Texture2D >( "container.jpg", 0 ) };
-    const auto awesomeface{ engine->LoadResource< Texture2D >( "awesomeface.png", 1, true ) };
+    const auto awesomeface{ engine->LoadResource< Texture2D >(
+        "awesomeface.png", 1, true ) };
 
     if ( vert_shader and frag_shader and VBO and VAO and container and awesomeface ) {
-        Entity* const triangle_entity{ engine->CreateEntity( "Triangle" ) };
+
+        Entity* const triangle_entity = engine->CreateEntity( "Triangle" );
 
         const auto shader_program{ engine->LoadResource< ShaderProgram >(
             triangle_entity->GetName(), *vert_shader, *frag_shader ) };
@@ -67,11 +70,14 @@ void PeanutGL::EngineSetup( Engine* const engine ) {
 
         VBO->Write( triangle_component->GetVertices() );
 
-        engine->SetActiveCamera( triangle_entity->AddComponent< CameraComponent >( "FlyingCamera" ) );
+        engine->SetActiveCamera(
+            triangle_entity->AddComponent< CameraComponent >( "FlyingCamera" ) );
 
-        auto* const models_array{ triangle_entity->AddComponent< ModelsArray >( "ModelsArray" ) };
+        auto* const models_array{ triangle_entity->AddComponent< ModelsArray >(
+            "ModelsArray" ) };
 
-        models_array->AddModel( "model" ); // Checks that the default cube position is 0.0F, 0.0F, 0.0F.
+        models_array->AddModel(
+            "model" ); // Checks that the default cube position is 0.0F, 0.0F, 0.0F.
 
         for ( const auto& pos : CubePositions ) {
             models_array->AddModel( "model", pos );
@@ -81,21 +87,26 @@ void PeanutGL::EngineSetup( Engine* const engine ) {
             value.UseUniform();
         }
 
-        auto* const view_component{ triangle_entity->AddComponent< ViewComponent >( "view" ) };
+        auto* const view_component =
+            triangle_entity->AddComponent< ViewComponent >( "view" );
+
         view_component->UseUniform();
 
-        auto* const projection_component{ triangle_entity->AddComponent< ProjectionComponent >(
-            "projection", engine->GetPlatform()->GetWindowWidth(), engine->GetPlatform()->GetWindowHeight() ) };
+        auto* const projection_component =
+            triangle_entity->AddComponent< ProjectionComponent >(
+                "projection", engine->GetPlatform()->GetWindowWidth(),
+                engine->GetPlatform()->GetWindowHeight() );
+
         projection_component->UseUniform();
 
         /* Position, Texture */
-        const std::span< const VertexBufferElement > vao_layout{ triangle_component->SetAttributes< float >(
-            { 3, 2 } ) };
+        const std::span< const VertexBufferElement > vao_layout{
+            triangle_component->SetAttributes< float >( { 3, 2 } )
+        };
 
         VAO->SetLayout( vao_layout );
 
         shader_program->SetUniform( container );
-
         shader_program->SetUniform( awesomeface );
 
         triangle_entity->Initialize();

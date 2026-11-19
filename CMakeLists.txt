@@ -16,9 +16,9 @@ endif()
 set(CMAKE_C_COMPILER clang)
 set(CMAKE_CXX_COMPILER clang++)
 
-set(CMAKE_C_COMPILER "/usr/lib/llvm/22/bin/clang")
+set(CMAKE_C_COMPILER "/usr/lib/llvm/23/bin/clang")
 
-set(CMAKE_CXX_COMPILER "/usr/lib/llvm/22/bin/clang++")
+set(CMAKE_CXX_COMPILER "/usr/lib/llvm/23/bin/clang++")
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -29,6 +29,16 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
+include(CheckIPOSupported)
+check_ipo_supported(RESULT ipo_supported OUTPUT error)
+
+if(ipo_supported)
+    message(STATUS "LTO / IPO is supported and enabled.")
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+else()
+    message(STATUS "LTO / IPO not supported: ${error}")
+endif()
+
 # User-configurable options
 option(BUILD_EXAMPLES "Build example applications" OFF)
 option(BUILD_STATIC_LIB "Build static library only" OFF)
@@ -36,10 +46,15 @@ option(ENABLE_TIME_TRACE "Add -ftime-trace to Clang builds" OFF)
 option(ENABLE_DOCS "Build with engine documentation." OFF)
 
 include(CMake/Dependencies.cmake)
+include(CMake/CompilerFlags.cmake)
 include(CMake/GeneratedConstants.cmake)
 include(CMake/LibunwindExtern.cmake)
+
+
 # The compiled library code is here
 add_subdirectory(PeanutGL)
 
 # The executable code is here
-add_subdirectory(Playground)
+add_subdirectory(Playground/LearnOpenGL)
+add_subdirectory(Playground/BasicText)
+add_subdirectory(Playground/MultiDrawElements)

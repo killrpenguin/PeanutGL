@@ -1,0 +1,28 @@
+set(DEBUG_COMPILER_FLAGS
+	"-g"
+	"-O3"
+	"-march=native"
+)
+set(RELEASE_COMPILER_FLAGS
+	"-O3"
+	"-DNDEBUG"
+	"-march=native"
+)
+set(CLANG_COMPILER_FLAGS
+	"-Wall"
+	"-Wdeprecated"
+        "-Wextra"
+        "-Wcast-align"
+	"-Wdouble-promotion"
+	"-Wimplicit-fallthrough"
+	"-Wmisleading-indentation"
+	"-Wnon-virtual-dtor"
+	"-Wnull-dereference"
+	"-Wold-style-cast"
+	"-Woverloaded-virtual"
+	"-Wpedantic"
+	"-Wshadow"
+	"-Wundef"
+	"-Wuninitialized"
+	"-std=c++2c"
+)

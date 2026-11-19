@@ -34,12 +34,15 @@ namespace PeanutGL {
      */
     class DebugSystem {
       private:
-        struct CustomFrontendOptions {
-            static constexpr quill::QueueType queue_type               = quill::QueueType::BoundedDropping;
+        struct CustomFrontendOptions : quill::FrontendOptions {
+            static constexpr quill::QueueType queue_type =
+                quill::QueueType::BoundedDropping;
             static constexpr size_t initial_queue_capacity             = 131'072;
             static constexpr uint32_t blocking_queue_retry_interval_ns = 800;
-            static constexpr size_t unbounded_queue_max_capacity       = 2ULL * 1024U * 1024U * 1024U;
-            static constexpr quill::HugePagesPolicy huge_pages_policy  = quill::HugePagesPolicy::Never;
+            static constexpr size_t unbounded_queue_max_capacity =
+                2ULL * 1024U * 1024U * 1024U;
+            static constexpr quill::HugePagesPolicy huge_pages_policy =
+                quill::HugePagesPolicy::Never;
         };
 
         using CustomFrontend = quill::FrontendImpl< CustomFrontendOptions >;
@@ -50,7 +53,8 @@ namespace PeanutGL {
 
         std::mutex mutex;
 
-        std::unordered_map< std::string, std::chrono::high_resolution_clock::time_point > measurements{};
+        std::unordered_map< std::string, std::chrono::high_resolution_clock::time_point >
+            measurements{};
 
         std::function< void( const std::string& ) > crashHandler{};
 
@@ -60,9 +64,11 @@ namespace PeanutGL {
 
             quill::Backend::start( backend_options );
 
-            auto console_sink = CustomFrontend::create_or_get_sink< quill::ConsoleSink >( "sink_id_1" );
+            auto console_sink =
+                CustomFrontend::create_or_get_sink< quill::ConsoleSink >( "sink_id_1" );
 
-            logger = CustomFrontend::create_or_get_logger( "DebugSystem", std::move( console_sink ) );
+            logger = CustomFrontend::create_or_get_logger(
+                "DebugSystem", std::move( console_sink ) );
 
             logger->set_log_level( quill::LogLevel::TraceL3 );
 
@@ -122,19 +128,22 @@ namespace PeanutGL {
             auto measurement_item = measurements.find( name );
 
             if ( measurement_item != measurements.end() ) {
-                auto duration =
-                    std::chrono::duration_cast< std::chrono::microseconds >( now - measurement_item->second ).count();
+                auto duration = std::chrono::duration_cast< std::chrono::microseconds >(
+                                    now - measurement_item->second )
+                                    .count();
                 LOG_INFO( logger, "Performance {}: {} us", name, duration );
                 measurements.erase( measurement_item );
             } else {
-                LOG_ERROR( logger, "Performance: No measurement started with name: {}", name );
+                LOG_ERROR(
+                    logger, "Performance: No measurement started with name: {}", name );
             }
         }
         /**
          * @brief Set the crash handler.
          * @param handler The crash handler function.
          */
-        auto SetCrashHandler( std::function< void( const std::string& ) > handler ) -> void {
+        auto SetCrashHandler( std::function< void( const std::string& ) > handler )
+            -> void {
             std::lock_guard< std::mutex > lock( mutex );
 
             crashHandler = std::move( handler );

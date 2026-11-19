@@ -71,20 +71,17 @@ namespace PeanutGL {
 
         explicit VertexArray( const std::string& identifier, const unsigned int vbo ) noexcept
             : Resource( identifier ), vbo_name{ vbo } {
-            Load();
         };
 
         explicit VertexArray(
             const std::string& identifier, const unsigned int vbo, const Stride< vertex_type > stride ) noexcept
             : Resource( identifier ), vbo_name{ vbo }, stride{ stride } {
-            Load();
         };
 
         explicit VertexArray(
             const std::string& identifier, const unsigned int vbo, const unsigned int ebo,
             const Stride< vertex_type > stride ) noexcept
             : Resource( identifier ), vbo_name{ vbo }, ebo_name{ ebo }, stride{ stride } {
-            Load();
             assert( VAO != 0 );
         };
 
@@ -116,20 +113,17 @@ namespace PeanutGL {
 
         explicit VertexArray( const std::string& identifier, const unsigned int vbo ) noexcept
             : Resource( identifier ), vbo_name{ vbo } {
-            Load();
         };
 
         explicit VertexArray(
             const std::string& identifier, const unsigned int vbo, const Stride< vertex_type > stride ) noexcept
             : Resource( identifier ), vbo_name{ vbo }, stride{ stride } {
-            Load();
         };
 
         explicit VertexArray(
             const std::string& identifier, const unsigned int vbo, const unsigned int ebo,
             const Stride< vertex_type > stride ) noexcept
             : Resource( identifier ), vbo_name{ vbo }, ebo_name{ ebo }, stride{ stride } {
-            Load();
             assert( VAO != 0 );
         };
 
@@ -202,20 +196,17 @@ namespace PeanutGL {
 
         explicit VertexArray( const std::string& identifier, const unsigned int vbo ) noexcept
             : Resource( identifier ), vbo_name{ vbo } {
-            Load();
         };
 
         explicit VertexArray(
             const std::string& identifier, const unsigned int vbo, const Stride< vertex_type > stride ) noexcept
             : Resource( identifier ), vbo_name{ vbo }, stride{ stride } {
-            Load();
         };
 
         explicit VertexArray(
             const std::string& identifier, const unsigned int vbo, const unsigned int ebo,
             const Stride< vertex_type > stride ) noexcept
             : Resource( identifier ), vbo_name{ vbo }, ebo_name{ ebo }, stride{ stride } {
-            Load();
             assert( VAO != 0 );
         };
 
